@@ -1,0 +1,16 @@
+# CINEMATIC_CUE_SHEET
+
+Short, gameplay-integrated sequences. **Status column describes the current build**; story text is proposal (not approved canon). IDs reference the manifests. "Impl" = what exists now.
+
+| # | Sequence | Framing / motion | Pose / animation | Lighting + VFX | Dialogue | SFX | Music / silence | Duration | Gameplay transition | Impl |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | **Opening wake-up** | Static wide on Cradle Bay, floor plate lower-right. No motion. | `ANIM-GHOST-KNEEL`, then look up (ghost_up) | Starts **in ECHO grade**; `VFX-SCANLINES-001`, `VFX-NOISE-001`; hard cut to white then black | `VO-ITER-OPEN-01` "Okay. Okay. Look back." (subtitle) | `SFX-BREATH`, `SFX-STATIC-BURST`, `SFX-RELAY-CLICK` | 4 s silence first; then ambience fades in at control | ~16 s | Toast "CRADLE // WEAVE COMPLETE", player gets control; ORPHEUS speaks | Impl (code, placeholder art) |
+| 2 | **First ECHO discovery** | Player-follow camera; no cut | Player idle; `ANIM-PLAYER-ECHO-ACTIVATE` (P1) | Cyan grade fades in ~90 ms; mug steams; source tag | ORPHEUS recall line | `SFX-ECHO-ACTIVATE` | Ambience low-passed | ~3 s per hold | Free play | Impl |
+| 3 | **Previous-iteration encounter** (locker echo) | Follow camera; figure crosses frame and looks up at the ceiling camera | Ghost walk E, kneel at plate 3 | Ghost additive cyan, card sprite carried | "If they find it in the locker, they'll never look back." | `SFX-GHOST-APPEAR` (P1), `SFX-PLATE-LIFT` later | Silence under echo | ~5 s loop | Player lifts plate 3 | Impl |
+| 4 | **Core-door beat (DON'T ANSWER)** | Lights dim; control held ~6 s | Ghost at door writes in frost, dissolves mid-word | Dim to 40%; frost text overlay; static dissolve | ORPHEUS "Please state your name."; ghost "…No." | `CINE-DOOR-DIM-01`, `SFX-FROST-WRITE` | Hum drops; **no sting** | ~8 s | Door opens; name loop starts (every 25 s) | Impl |
+| 5 | **Iteration 017 revelation** | Fade to black, then static wide on Cradle Bay; ghost replays **the player's own recorded path** | Ghost walk (player's path), pause at mug and locker | ECHO forced on; source tag R-017; subtitle "It is you." | ORPHEUS "Continuity restored…" | none (type ticks only) | **Full silence** (`CINE-SILENCE-REVEAL`) | ~10 s | Fade back; log terminal enabled | Impl |
+| 6 | **Reflection + Lethe unlock** | Dark mirror described in text (portrait is P1) | — | Amber emergency grade; Well goes dark | ORPHEUS "The lever is available." | `SFX-DOOR-SLIDE` | Ambience ~25% | ~15 s | Final console enabled | Impl (text only; `PORTRAIT-REFLECTION-001` missing) |
+| 7 | **Final decision** | Non-modal; free walking | Player walks between console and lever | Amber grade | ORPHEUS name loop every 25 s | `SFX-LEVER-PULL` on pull | Name loop is the rhythm | player-paced | Ending | Impl |
+| 8 | **Endings** | Static framing; fade to black then text screen | `CHAR-VOSS-WAKE-001` (P1) | Stasis frost; Lethe cascade of ghosts | per ending (see `src/data/story.ts`) | `SFX-STASIS-RELEASE`, `CINE-LETHE-CASCADE-01` (P1) | `MUS-MOTIF-*` | 30-55 s | Restart (reload) | Impl (placeholder visuals) |
+
+**Rule:** no sequence blocks input longer than ~20 s without a player action or an environmental change.

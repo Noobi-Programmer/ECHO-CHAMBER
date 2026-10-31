@@ -1,0 +1,71 @@
+asset_id,name,category,priority,owner,target_file,specification,current_game_key,status,notes
+CHAR-PLAYER-001,Iteration 017 protagonist (adult redesign),characters,P0,OmniRush,public/assets/characters/char-player-001.png,"Spritesheet. Frame 16x32 (figure ~12x27, feet on bottom row). S=south(down), N=north(up), E=east(side); west is mirrored E. Slim adult, graphite-grey jumpsuit, dark hair, minimal face, dark boots, cyan wrist device. See ANIMATION_MANIFEST.",p_{down|up|side}_{0|1},IMPLEMENTED-PLACEHOLDER,Current sprite is 12x16 chibi: REDESIGN. Concept approval before full set.
+CHAR-ITERATION-GHOST-001,Previous-iteration figure (faceless),characters,P0,OmniRush,public/assets/characters/char-iteration-ghost-001.png,Same frames/proportions as CHAR-PLAYER-001; face region blank (soft shadow); gown/jumpsuit identical silhouette. Must be derivable from the player sheet (same file layout).,ghost_{down|up|side}_{0|1},IMPLEMENTED-PLACEHOLDER,"Story rule: the remembering figure has no face. Echo tint is applied in code, not baked in."
+CHAR-ITERATION-KNEEL-001,Iteration figure kneeling at plate,characters,P0,OmniRush,public/assets/characters/char-iteration-kneel-001.png,"1 frame 16x32, same style as ghost.",ghost_kneel,IMPLEMENTED-PLACEHOLDER,Opening memory + locker memory.
+CHAR-MIRA-001,"Mira Sen (steady, lab coat)",characters,P0,OmniRush,public/assets/characters/char-mira-001.png,"Frames as player; two variants: faceless (her own memories) and with face (Voss memories). Short dark hair, pale lab coat.","mira_{dir}_{n}, miraface_{dir}_{n}",IMPLEMENTED-PLACEHOLDER,Pending story: appearance not approved canon.
+CHAR-MIRA-CANE-001,Mira with cane (ill),characters,P0,OmniRush,public/assets/characters/char-mira-cane-001.png,1-2 frames; cane in right hand; faceless + face variants.,"mira_cane, miraface_cane",IMPLEMENTED-PLACEHOLDER,Argument memory.
+CHAR-VOSS-001,Elias Voss,characters,P0,OmniRush,public/assets/characters/char-voss-001.png,"Frames S and N, tall, rolled sleeves; faceless variant for his own-memory view.","voss_down, voss_up, voss_faceless",IMPLEMENTED-PLACEHOLDER,Pending story approval.
+CHAR-VOSS-WAKE-001,"Voss waking (sit up, stand)",characters,P1,OmniRush,public/assets/characters/char-voss-wake-001.png,"4-6 frames, 16x32.",(none: reuses voss_down),MISSING,Ending beat.
+CHAR-TENDER-001,Tender maintenance drone,characters,P1,OmniRush,public/assets/characters/char-tender-001.png,"2-frame walk loop, 16x10, four legs + brush arm.","tender_0, tender_1",IMPLEMENTED-PLACEHOLDER,Appears once in the lab.
+PORTRAIT-REFLECTION-001,"Reflection portrait (Mira-like face, different expression)",characters,P1,OmniRush,public/assets/characters/portrait-reflection-001.png,"96x96, matches PROP-PHOTO-001 face.",(none: text only),MISSING,Reveal beat; text carries it today.
+ENV-STATION-TILESET-001,Station tileset,environment,P0,OmniRush,public/assets/environment/env-station-tileset-001.png,"16x16 tiles: floor x3 variants, wall top, wall face, wall shadow, inner/outer corners, door frame. Palette: navy/near-black/desaturated cyan/grey.",map (procedural canvas 704x560),IMPLEMENTED-PLACEHOLDER,"Today the map is one painted canvas, not tiles. Replacement = new map texture with same size/layout, OR tileset + map JSON (Block 2)."
+ENV-DOOR-LAB-001,Lab door (closed/open),environment,P0,OmniRush,public/assets/environment/env-door-lab-001.png,"32x48, 2 states, plus reader lamp anchor.","door_lab, door_lab_open",IMPLEMENTED-PLACEHOLDER,
+ENV-DOOR-CORE-001,Core door with frosted viewport (closed/open),environment,P0,OmniRush,public/assets/environment/env-door-core-001.png,"32x64, 2 states; viewport readable at 1x.","door_core, door_core_open",IMPLEMENTED-PLACEHOLDER,Frost-writing beat happens here.
+ENV-WINDOW-ICEGIANT-001,Observation window with ice giant + storm,environment,P0,OmniRush,public/assets/environment/env-window-icegiant-001.png,"128x48, dark storm near horizon.",window,IMPLEMENTED-PLACEHOLDER,
+ENV-WINDOW-DOTS-001,Grease-pencil dot trail (present),environment,P0,OmniRush,public/assets/environment/env-window-dots-001.png,128x48 transparent overlay; dot spiral ending at scribbled 1251.,dots,IMPLEMENTED-PLACEHOLDER,
+ENV-WINDOW-DOTS-ECHO-001,16 extra dots (echo only),environment,P0,OmniRush,public/assets/environment/env-window-dots-echo-001.png,"128x48 transparent overlay, white 2x2 dots continuing the spiral.",dots_echo,IMPLEMENTED-PLACEHOLDER,
+ENV-WINDOW-MYDOT-001,Player-made dot,environment,P0,OmniRush,public/assets/environment/env-window-mydot-001.png,2x2 amber.,my_dot,IMPLEMENTED-PLACEHOLDER,
+ENV-WELL-COLUMN-001,Well column (lit/dark),environment,P0,OmniRush,public/assets/environment/env-well-column-001.png,"32x44, 2 states; animated glow is P1.","well, well_dark",IMPLEMENTED-PLACEHOLDER,
+ENV-WELL-CONSOLE-001,Well console,environment,P0,OmniRush,public/assets/environment/env-well-console-001.png,32x16.,well_console,IMPLEMENTED-PLACEHOLDER,
+ENV-STOOL-001,Stool (REC_04),environment,P1,OmniRush,public/assets/environment/env-stool-001.png,10x10.,stool,IMPLEMENTED-PLACEHOLDER,
+ENV-CORE-PILLAR-001,Memory pillars (4),environment,P2,OmniRush,public/assets/environment/env-core-pillar-001.png,Pillars with shard slots.,(none: puzzle uses menu),MISSING,Needs puzzle change; not today.
+ENV-ROOM-DRESSING-001,"Cables, pipes, vents, hull panels",environment,P1,OmniRush,public/assets/environment/env-room-dressing-001.png,Overlay props 16-48 px for each of 3 rooms.,(none),MISSING,Breaks up flat walls.
+PROP-CRADLE-001,Cradle pod (open/closed),props,P0,OmniRush,public/assets/props/prop-cradle-001.png,"34x22, 2 states, warm gel.","cradle, cradle_closed",IMPLEMENTED-PLACEHOLDER,
+PROP-CRADLE-TALLY-001,Lid tally marks (echo only),props,P0,OmniRush,public/assets/props/prop-cradle-tally-001.png,"30x4, 16 marks in 4 groups.",tally,IMPLEMENTED-PLACEHOLDER,
+PROP-VOSS-POD-001,Voss stasis pod (closed/open),props,P0,OmniRush,public/assets/props/prop-voss-pod-001.png,"34x22, frosted glass, figure inside.","voss_pod, voss_pod_open",IMPLEMENTED-PLACEHOLDER,
+PROP-TERMINAL-001,Wall terminal,props,P0,OmniRush,public/assets/props/prop-terminal-001.png,16x24; screen lit.,terminal,IMPLEMENTED-PLACEHOLDER,Used in Cradle and Core.
+PROP-MIRA-MUG-001,"Mug, glued handle (present)",props,P0,OmniRush,public/assets/props/prop-mira-mug-001.png,5x5 to 8x8; visible glue seams.,mug,IMPLEMENTED-PLACEHOLDER,
+PROP-MIRA-MUG-ECHO-001,Mug whole + steam (echo),props,P0,OmniRush,public/assets/props/prop-mira-mug-echo-001.png,Same size; steam 2 frames optional.,mug_echo,IMPLEMENTED-PLACEHOLDER,
+PROP-LOCKER-001,M. SEN locker (closed/open),props,P0,OmniRush,public/assets/props/prop-locker-001.png,"14x26; palm plate; open shows jacket, empty lanyard, dust rectangle.","locker, locker_open",IMPLEMENTED-PLACEHOLDER,
+PROP-LAB-CARD-001,Lab keycard,props,P0,OmniRush,public/assets/props/prop-lab-card-001.png,6x3.,card,IMPLEMENTED-PLACEHOLDER,
+PROP-FLOOR-PLATE-001,Floor plate (normal/raised/open),props,P0,OmniRush,public/assets/props/prop-floor-plate-001.png,16x16 x3; raised plate has 1px shadow; open shows void.,"plate, plate_raised, plate_open",IMPLEMENTED-PLACEHOLDER,
+PROP-DOOR-READER-001,Card reader (red/green),props,P0,OmniRush,public/assets/props/prop-door-reader-001.png,4x4 x2.,"reader_red, reader_green",IMPLEMENTED-PLACEHOLDER,
+PROP-CORE-KEYPAD-001,Core keypad,props,P0,OmniRush,public/assets/props/prop-core-keypad-001.png,"12x14, four buttons.",keypad,IMPLEMENTED-PLACEHOLDER,
+PROP-SHAPE-GLYPHS-001,"Shapes: circle, triangle, square, diamond",props,P0,OmniRush,public/assets/props/prop-shape-glyphs-001.png,"9x9 white on transparent, 4 files/frames.","sh_circle, sh_triangle, sh_square, sh_diamond",IMPLEMENTED-PLACEHOLDER,Never colour-only.
+PROP-SEAL-SLAB-001,SEALED // ORPHEUS slab,props,P0,OmniRush,public/assets/props/prop-seal-slab-001.png,22x18 black with cyan border and glyph.,slab,IMPLEMENTED-PLACEHOLDER,
+PROP-LAB-CONSOLE-001,Lab console with Lethe key slot,props,P0,OmniRush,public/assets/props/prop-lab-console-001.png,48x20.,console,IMPLEMENTED-PLACEHOLDER,
+PROP-SNAPPED-KEY-001,Key (snapped shaft),props,P0,OmniRush,public/assets/props/prop-snapped-key-001.png,6x4 amber.,console_key,IMPLEMENTED-PLACEHOLDER,
+PROP-DESK-001,Desk (Mira/Voss/cradle),props,P0,OmniRush,public/assets/props/prop-desk-001.png,32x18.,desk,IMPLEMENTED-PLACEHOLDER,
+PROP-PHOTO-001,Photograph (face-down / face-up),props,P0,OmniRush,public/assets/props/prop-photo-001.png,5x3 / 5x4; face-up shows scratched woman.,"photo_down, photo_up",IMPLEMENTED-PLACEHOLDER,Echo version (intact face) is P1.
+PROP-RECORDER-001,Voice recorder (normal/sealed),props,P0,OmniRush,public/assets/props/prop-recorder-001.png,4x3 x2.,"recorder, recorder_sealed",IMPLEMENTED-PLACEHOLDER,
+PROP-GLUE-001,Glue tube,props,P1,OmniRush,public/assets/props/prop-glue-001.png,3x3.,glue,IMPLEMENTED-PLACEHOLDER,
+PROP-LETHE-LEVER-001,Lethe lever (idle/glass/pulled),props,P0,OmniRush,public/assets/props/prop-lethe-lever-001.png,16x26 x3.,"lethe, lethe_glass, lethe_pulled",IMPLEMENTED-PLACEHOLDER,
+PROP-MEMORY-SHARD-001,Memory shards F1-F4,props,P2,OmniRush,public/assets/props/prop-memory-shard-001.png,"8x8 x4, distinct icons.",(none),MISSING,Needs pillar puzzle.
+VFX-ECHO-GRADE-001,ECHO colour grade,vfx,P0,Abi+Claude,public/assets/vfx/vfx-echo-grade-001.png,Code: luminance onto cyan ramp (colour matrix).,(code in StationScene),IMPLEMENTED-PLACEHOLDER,Not an image asset; parameters live in code.
+VFX-SCANLINES-001,Scanline overlay,vfx,P0,OmniRush,public/assets/vfx/vfx-scanlines-001.png,4x4 tile.,scanlines,IMPLEMENTED-PLACEHOLDER,
+VFX-NOISE-001,Static noise tile,vfx,P0,OmniRush,public/assets/vfx/vfx-noise-001.png,64x64 tile.,noise,IMPLEMENTED-PLACEHOLDER,
+VFX-VIGNETTE-001,Vignette,vfx,P0,OmniRush,public/assets/vfx/vfx-vignette-001.png,320x180.,vignette,IMPLEMENTED-PLACEHOLDER,
+VFX-LIGHT-GLOW-001,Radial light stamp,vfx,P0,OmniRush,public/assets/vfx/vfx-light-glow-001.png,128x128 soft white radial.,light,IMPLEMENTED-PLACEHOLDER,Used to carve light from darkness.
+VFX-FADE-001,Fade to black/white,vfx,P0,Abi+Claude,public/assets/vfx/vfx-fade-001.png,DOM fade layer.,(DOM),IMPLEMENTED-PLACEHOLDER,
+VFX-FROST-WRITE-001,Frost lettering DON'T ANSW,vfx,P0,Abi+Claude,public/assets/vfx/vfx-frost-write-001.png,DOM text effect.,(DOM),IMPLEMENTED-PLACEHOLDER,
+VFX-ECHO-TRANSITION-001,ECHO on/off glitch burst,vfx,P1,OmniRush,public/assets/vfx/vfx-echo-transition-001.png,6-8 frame 320x180 burst.,(noise pulse in code),IMPLEMENTED-PLACEHOLDER,
+VFX-GHOST-DISSOLVE-001,Ghost appear/dissolve,vfx,P1,OmniRush,public/assets/vfx/vfx-ghost-dissolve-001.png,6 frames over character; alpha fade used today.,(alpha tween),IMPLEMENTED-PLACEHOLDER,
+VFX-SPARKS-001,Electrical sparks,vfx,P1,OmniRush,public/assets/vfx/vfx-sparks-001.png,4-frame 16x16.,(none),MISSING,
+VFX-MEMORY-COLLAPSE-001,Lethe cascade / collapse,vfx,P1,OmniRush,public/assets/vfx/vfx-memory-collapse-001.png,Layered cuts + dither dissolve.,(subtitles + fades),IMPLEMENTED-PLACEHOLDER,
+VFX-DUST-001,Dust particles,vfx,P2,OmniRush,public/assets/vfx/vfx-dust-001.png,1-2 px motes.,(none),MISSING,
+UI-LOGO-001,ECHO//CHAMBER logo,ui,P1,OmniRush,public/assets/ui/ui-logo-001.png,"Pixel logo PNG, ~160x24, transparent.","(styled text, VT323)",IMPLEMENTED-PLACEHOLDER,Text logo works today.
+UI-FONTS-001,VT323 + IBM Plex Mono,ui,P0,Abi+Claude,public/assets/ui/ui-fonts-001.png,Bundled @fontsource (OFL).,(bundled),IMPLEMENTED-PLACEHOLDER,Licence: SIL OFL. Attribution in credits.
+UI-TITLE-SCREEN-001,Title + controls,ui,P0,Abi+Claude,public/assets/ui/ui-title-screen-001.png,DOM/CSS component.,(DOM),IMPLEMENTED-PLACEHOLDER,Skinning later; not sprite assets.
+UI-PROMPT-001,Interaction prompt,ui,P0,Abi+Claude,public/assets/ui/ui-prompt-001.png,DOM/CSS component.,(DOM),IMPLEMENTED-PLACEHOLDER,Skinning later; not sprite assets.
+UI-DIALOGUE-BOX-001,Inspect/dialogue box,ui,P0,Abi+Claude,public/assets/ui/ui-dialogue-box-001.png,DOM/CSS component.,(DOM),IMPLEMENTED-PLACEHOLDER,Skinning later; not sprite assets.
+UI-ORPHEUS-PANEL-001,ORPHEUS panel + waveform,ui,P0,Abi+Claude,public/assets/ui/ui-orpheus-panel-001.png,DOM/CSS component.,(DOM),IMPLEMENTED-PLACEHOLDER,Skinning later; not sprite assets.
+UI-SOURCE-TAG-001,Echo source tag,ui,P0,Abi+Claude,public/assets/ui/ui-source-tag-001.png,DOM/CSS component.,(DOM),IMPLEMENTED-PLACEHOLDER,Skinning later; not sprite assets.
+UI-ECHO-METER-001,ECHO meter + state label,ui,P0,Abi+Claude,public/assets/ui/ui-echo-meter-001.png,DOM/CSS component.,(DOM),IMPLEMENTED-PLACEHOLDER,Skinning later; not sprite assets.
+UI-CHOICE-001,Choice list,ui,P0,Abi+Claude,public/assets/ui/ui-choice-001.png,DOM/CSS component.,(DOM),IMPLEMENTED-PLACEHOLDER,Skinning later; not sprite assets.
+UI-KEYPAD-001,Shape keypad,ui,P0,Abi+Claude,public/assets/ui/ui-keypad-001.png,DOM/CSS component.,(DOM),IMPLEMENTED-PLACEHOLDER,Skinning later; not sprite assets.
+UI-TERMINAL-LOG-001,Terminal log,ui,P0,Abi+Claude,public/assets/ui/ui-terminal-log-001.png,DOM/CSS component.,(DOM),IMPLEMENTED-PLACEHOLDER,Skinning later; not sprite assets.
+UI-SUBTITLES-001,Echo subtitles,ui,P0,Abi+Claude,public/assets/ui/ui-subtitles-001.png,DOM/CSS component.,(DOM),IMPLEMENTED-PLACEHOLDER,Skinning later; not sprite assets.
+UI-ENDING-SCREEN-001,Ending + restart,ui,P0,Abi+Claude,public/assets/ui/ui-ending-screen-001.png,DOM/CSS component.,(DOM),IMPLEMENTED-PLACEHOLDER,Skinning later; not sprite assets.
+UI-PAUSE-MENU-001,Pause menu,ui,P1,Abi+Claude,public/assets/ui/ui-pause-menu-001.png,DOM/CSS component.,(none),MISSING,Only M=mute exists today.
+UI-SETTINGS-001,Settings + volume sliders,ui,P1,Abi+Claude,public/assets/ui/ui-settings-001.png,DOM/CSS component.,(none),MISSING,Only M=mute exists today.
+UI-CREDITS-001,Credits screen,ui,P1,Abi+Claude,public/assets/ui/ui-credits-001.png,DOM/CSS component.,(none),MISSING,Only M=mute exists today.
