@@ -12,10 +12,10 @@ const VOICE_MAP: Record<string, string> = {
 };
 
 const VOICE_DURATIONS: Record<string, number> = {
-  REC_01: 31000,
-  REC_03: 57000,
-  REC_04: 46000,
-  REC_05: 15000,
+  REC_01: 28604,
+  REC_03: 50286,
+  REC_04: 40359,
+  REC_05: 11389,
 };
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls: string, parent?: HTMLElement, html = '') {

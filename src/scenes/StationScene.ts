@@ -1668,7 +1668,7 @@ export class StationScene extends Phaser.Scene {
     const v = await this.wakeVoss();
     this.player.setVisible(false);
     const vpLethe = audio.playVoice('vo-mira-rec05.ogg');
-    for (const l of REC.rec05) { ui.subtitle(l, 'REC_05 · M. SEN', 2600); await wait(2700); }
+    for (const l of REC.rec05) { ui.subtitle(l, 'REC_05 · M. SEN', 2200); await wait(2280); }
     await vpLethe;
     audio.motif('minor');
     v.setTexture('voss_up');
