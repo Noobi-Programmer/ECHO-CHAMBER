@@ -2,128 +2,115 @@
 
 > **A memory can be evidence. It can also be a lie.**
 
-A cinematic 2D pixel-art psychological sci-fi thriller and environmental puzzle game for CodeDay. Built with Phaser 3, TypeScript, and Vite.
+A short, browser-first psychological sci-fi thriller about memory, identity, and the choices that make a person.
 
----
+You wake aboard **Asphodel**, an isolated research station orbiting an ice giant. The station's caretaker, ORPHEUS, asks you to help restore its incomplete records. But the rooms remember things the station's logs do not—and those memories do not always agree.
 
-## Quickstart
+Use **ECHO** to reveal fragments of the past, compare them with the physical evidence in front of you, and discover why someone has been leaving clues for the next person to wake.
+
+## The experience
+
+- Explore three connected spaces: Cradle Bay, the Observation Lab, and the Well.
+- Hold ECHO to reveal authored memories layered over the present.
+- Investigate objects, recordings, terminals, and conflicting accounts.
+- Corroborate memories using evidence in the physical world.
+- Solve environmental puzzles, reconstruct a sequence of events, and make a final choice.
+- Follow a compact, atmospheric story designed around discovery rather than combat or jump scares.
+
+## Controls
+
+| Key | Action |
+|---|---|
+| `W A S D` / Arrow keys | Move |
+| `Shift` | Run |
+| `E` / `Space` | Inspect, interact, or continue dialogue |
+| Hold `Q` | Activate ECHO and reveal the past |
+| `Tab` | Open inventory / evidence |
+| `?` | Show keyboard shortcuts |
+| `M` | Mute / unmute audio |
+| `Esc` | Close an interface / pause where supported |
+
+Headphones recommended. The current title screen estimates a 6–8 minute playthrough; exploration and reading pace may change that.
+
+## Play in the browser
+
+The project is built as a static web game with Phaser 3, TypeScript, and Vite. Once a browser build is published, it is intended to run directly on itch.io without a separate download.
+
+**Current publication status:** in development. This repository is not yet a claim that a final public release has been shipped.
+
+## Run locally
+
+Requirements: Node.js and a package manager.
 
 ```bash
 # Install dependencies
 npm install
 
-# Start local development server (Vite)
+# Start the Vite development server
 npm run dev
 
-# Build for production
+# Type-check and create a production build
 npm run build
 
-# Preview production build locally
+# Preview the production build locally
 npm run preview
-
-# Validate required project plan documents
-npm run plan:validate
-
-# Verify and synchronize agent skill mirrors
-npm run skills:check
-npm run skills:sync
 ```
 
----
+Useful repository checks:
 
-## Clean Repository Structure
+```bash
+npm run plan:validate
+npm run skills:check
+```
 
-The repository keeps only essential project roots in the top-level directory, with all specifications, planning, manifests, and research organized into focused subdirectories:
+`npm run test:e2e` runs the Playwright playthrough script; Playwright and its browser need to be available in the development environment.
+
+The production build is written to `dist/`. For an itch.io HTML build, ZIP the **contents** of `dist/` so `index.html` is at the root of the ZIP—not inside an extra `dist/` folder.
+
+## Progress and saves
+
+**Browser-local saving is not implemented in the inspected build.** Reloading the page currently starts the experience again. There is no account system, cloud save, or cross-device synchronisation.
+
+The recommended first save implementation is a single automatic save slot in the browser's `localStorage`. It should preserve story flags, the current safe checkpoint, player position, recall/evidence state, and the movement samples needed for the self-replay. A Continue / New Game choice can then be shown on the title screen. This requires no backend or player account; saves remain local to that browser profile and device.
+
+## Technical overview
+
+- **Engine:** Phaser 3.90
+- **Language:** TypeScript
+- **Build tool:** Vite 8
+- **Rendering:** 320 × 180 internal resolution, scaled to a 16:9 game stage with pixel-art rendering
+- **Architecture:** one primary Station scene, DOM-based interface overlays, and an audio director with sample playback and procedural fallbacks
+- **Backend:** none required for the current game
+
+The game currently creates its main runtime textures through `generateTextures()` in `src/art/textures.ts`. The repository also contains separate illustration, character, audio, and voice-over asset directories; check the manifests and actual scene references before assuming every staged asset is already used in gameplay.
+
+## Project structure
 
 ```text
-├── src/                          # Game source code (Phaser 3 + TypeScript)
-│   ├── main.ts                   # Entry point and Phaser game bootstrap
-│   ├── style.css                 # Game viewport styling and retro CRT styles
-│   ├── art/                      # Procedural pixel-art textures and palettes
-│   ├── data/                     # Story dialogue, logs, and interaction data
-│   ├── scenes/                   # Game scenes (StationScene exploration & ECHO)
-│   ├── systems/                  # Subsystems (AudioDirector, UI overlays)
-│   └── world/                    # Room layout and coordinate definitions
-├── docs/                         # Canonical specifications and design bibles
-│   ├── planning/                 # Game design, pitch, charter, and roadmap
-│   ├── coordination/             # Multi-agent contracts, status board, prompts, skills
-│   ├── narrative/                # Dialogue scripts, character bibles, clue maps, state
-│   ├── technical/                # Engine benchmarks, architecture proposal, QA plan
-│   └── assets/                   # Asset pipeline, audio/visual manifests, license registers
-├── research/                     # Technical spikes, candidate audits, and logs
-│   ├── agents/                   # Multi-agent capability reports
-│   ├── assets/                   # Audio/visual asset candidates & license audits
-│   ├── qa/                       # Test automation research & reports
-│   ├── story/                    # Story workshop treatment evaluations
-│   └── technical/                # Engine benchmark notes & comparison templates
-├── scripts/                      # Validation and skill synchronization utilities
-│   ├── check-agent-skills.mjs    # Validates skill frontmatter and mirrors
-│   ├── sync-skills.mjs           # Synchronizes .agents/skills into .claude/skills
-│   └── validate-plan.mjs         # Validates required project plan documents
-├── .agents/skills/               # Canonical project skills library (19 skills)
-├── .claude/skills/               # Mirrored skills for Claude Code and OmniRush
-├── AGENTS.md                     # Repository-wide rules and constraints
-├── CLAUDE.md                     # Claude Code agent instructions
-├── README.md                     # Project overview and directory guide
-├── index.html                    # Web app entrypoint
-├── package.json                  # npm dependencies and scripts
-├── tsconfig.json                 # TypeScript compiler configuration
-└── vite.config.ts                # Vite bundler configuration
+src/
+  main.ts                 # Phaser bootstrap
+  art/textures.ts         # Runtime texture generation
+  data/story.ts           # Dialogue, recordings, puzzle fragments and endings
+  scenes/StationScene.ts  # Exploration, ECHO, interactions and story flow
+  systems/audio.ts        # Audio director
+  systems/ui.ts           # Dialogue, terminals, keypad and interface overlays
+  style.css               # Game and UI styling
+  world/                  # Map, rooms and coordinates
+public/assets/            # Static assets served by Vite
+assets/                   # Staged source audio and voice-over material
+docs/                     # Design, narrative, coordination and asset documentation
+tests/                    # Browser playthrough test
 ```
 
----
+## Development notes
 
-## Key Documents Index
+- The narrative and story bible are marked provisional in the project documentation; story changes should follow the approval process documented in `docs/coordination/AGENT_SYNC.md`.
+- The inspection-illustration bundle is catalogued in `docs/assets/ILLUSTRATION_MANIFEST.csv`.
+- Voice-over source files are staged separately. The inspected runtime audio code does not yet demonstrate that those MP3 voice files are played in-game, so this README does not describe the current build as fully voice acted.
+- The game is designed around keyboard controls and desktop browser play. Mobile support has not been established.
 
-### 1. Planning & Design (`docs/planning/`)
-- [`docs/planning/START_HERE.md`](./docs/planning/START_HERE.md) — 60-minute quickstart strategy and tracks.
-- [`docs/planning/CODEDAY_RUNSHEET.md`](./docs/planning/CODEDAY_RUNSHEET.md) — CodeDay schedule, pitch, roles, and cut order.
-- [`docs/planning/PROJECT_CHARTER.md`](./docs/planning/PROJECT_CHARTER.md) — Product pillars and non-goals.
-- [`docs/planning/GAME_DESIGN.md`](./docs/planning/GAME_DESIGN.md) — Full game design document and mechanic specs.
-- [`docs/planning/IDEA.md`](./docs/planning/IDEA.md) — High-level pitch and player promise.
-- [`docs/planning/EXPERIENCE_BLUEPRINT.md`](./docs/planning/EXPERIENCE_BLUEPRINT.md) — Playthrough timeline, pacing, and input language.
-- [`docs/planning/IMPLEMENTATION_ROADMAP.md`](./docs/planning/IMPLEMENTATION_ROADMAP.md) — Phased delivery plan from prototype to ship.
-- [`docs/planning/DECISION_LOG.md`](./docs/planning/DECISION_LOG.md) — General project decision log.
+## Credits
 
-### 2. Multi-Agent Coordination (`docs/coordination/`)
-- [`AGENTS.md`](./AGENTS.md) — Repository-wide rules and constraints.
-- [`docs/coordination/AGENT_SYNC.md`](./docs/coordination/AGENT_SYNC.md) — Mandatory multi-agent coordination contract.
-- [`docs/coordination/AGENT_STATUS.md`](./docs/coordination/AGENT_STATUS.md) — Real-time task status board and coordinator lease.
-- [`docs/coordination/AGENT_ROUTER.md`](./docs/coordination/AGENT_ROUTER.md) — Dynamic task router and assignment algorithm.
-- [`docs/coordination/AGENT_PROMPTS.md`](./docs/coordination/AGENT_PROMPTS.md) — Role-specific launch prompts.
-- [`docs/coordination/AGENT_SYSTEM_PLAN.md`](./docs/coordination/AGENT_SYSTEM_PLAN.md) — Dynamic agent system design and topology.
-- [`docs/coordination/TEAM_DISPATCH.md`](./docs/coordination/TEAM_DISPATCH.md) — Initial parallel team assignments.
-- [`docs/coordination/SKILL_DISCOVERY.md`](./docs/coordination/SKILL_DISCOVERY.md) — Runtime-native skill discovery and expansion.
-- [`docs/coordination/SKILLS_PLAN.md`](./docs/coordination/SKILLS_PLAN.md) — Skills inventory and task recommendations.
-- [`docs/coordination/GITHUB_WORKFLOW.md`](./docs/coordination/GITHUB_WORKFLOW.md) — Branch strategy, PR requirements, and safe parallelism.
+Created for CodeDay Bengaluru 2026. Built by the ECHO//CHAMBER team.
 
-### 3. Narrative & Story (`docs/narrative/`)
-- [`docs/narrative/STORY_BIBLE.md`](./docs/narrative/STORY_BIBLE.md) — Canonical story bible, character rules, and guardrails.
-- [`docs/narrative/STORY_DECISIONS.md`](./docs/narrative/STORY_DECISIONS.md) — Story decisions and approval lock status.
-- [`docs/narrative/NARRATIVE_SCRIPT.md`](./docs/narrative/NARRATIVE_SCRIPT.md) — Full dialogue script, cues, and scene texts.
-- [`docs/narrative/CHARACTER_BIBLE.md`](./docs/narrative/CHARACTER_BIBLE.md) — Character dossiers and voices.
-- [`docs/narrative/CHRONOLOGY_AND_CLUE_MAP.md`](./docs/narrative/CHRONOLOGY_AND_CLUE_MAP.md) — Chronological timeline and clue cross-references.
-- [`docs/narrative/STORY_WORKSHOP.md`](./docs/narrative/STORY_WORKSHOP.md) — Story workshop synthesis and treatment comparisons.
-- [`docs/narrative/STORY_REVIEW_RUBRIC.md`](./docs/narrative/STORY_REVIEW_RUBRIC.md) — Quality evaluation rubric.
-
-### 4. Technical & Engineering (`docs/technical/`)
-- [`docs/technical/TECHNICAL_RESEARCH_PLAN.md`](./docs/technical/TECHNICAL_RESEARCH_PLAN.md) — Engine benchmark and technical spikes.
-- [`docs/technical/ARCHITECTURE_PROPOSAL.md`](./docs/technical/ARCHITECTURE_PROPOSAL.md) — Engine architecture, state machine, and systems.
-- [`docs/technical/QA_PLAN.md`](./docs/technical/QA_PLAN.md) — Functional, accessibility, and blind-playtest criteria.
-- [`docs/technical/SOURCES_AND_RESEARCH.md`](./docs/technical/SOURCES_AND_RESEARCH.md) — Official documentation and research references.
-
-### 5. Assets & Licensing (`docs/assets/`)
-- [`docs/assets/ASSET_PIPELINE.md`](./docs/assets/ASSET_PIPELINE.md) — Safe asset acquisition, audit, and ingestion pipeline.
-- [`docs/assets/ASSET_REGISTER.csv`](./docs/assets/ASSET_REGISTER.csv) — Register of all imported third-party assets and licences.
-- [`docs/assets/ASSET_SOURCES.md`](./docs/assets/ASSET_SOURCES.md) — Permitted sources and legal verification rules.
-- Manifests: `AUDIO_MANIFEST.csv`, `ANIMATION_MANIFEST.csv`, `VISUAL_ASSET_MANIFEST.csv`, `VOICE_RECORDING_MANIFEST.csv`.
-
----
-
-## Agent Runtimes & Skills
-
-This repository uses the open `SKILL.md` standard:
-- **Canonical Library:** `.agents/skills/<skill-id>/SKILL.md`
-- **Claude / OmniRush Mirror:** `.claude/skills/<skill-id>/SKILL.md`
-
-All agents automatically discover and load only task-relevant skills. Run `npm run skills:check` to verify skill validity.
+Repository: <https://github.com/Noobi-Programmer/ECHO-CHAMBER>
