@@ -1,0 +1,16 @@
+{
+  "assetId": "CHAR-ITERATION-GHOST-001",
+  "name": "Previous Iteration / Memory Ghost (Concept C Derivation)",
+  "sheet": {
+    "file": "public/assets/characters/iterations/char-iteration-ghost-001.png",
+    "width": 80,
+    "height": 128,
+    "cellWidth": 16,
+    "cellHeight": 32
+  },
+  "pivot": {
+    "x": 8,
+    "y": 31
+  },
+  "features": "Faceless memory figure, spectral desaturated silhouette, cyan temporal aura, exact alignment with CHAR-PLAYER-001"
+}

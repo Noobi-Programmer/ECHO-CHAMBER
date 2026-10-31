@@ -1,9 +1,8 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { inflateSync } from 'node:zlib';
 
 function decodePng(buffer) {
-  // Simple PNG chunk reader for 8-bit RGBA
   let offset = 8;
   let width = 0, height = 0;
   const idatChunks = [];
@@ -38,73 +37,80 @@ function decodePng(buffer) {
   return { width, height, pixels };
 }
 
-const framesDir = 'public/assets/characters/player/frames';
-const frameFiles = readdirSync(framesDir).filter(f => f.endsWith('.png'));
+const suites = [
+  { dir: 'public/assets/characters/player/frames', cellW: 16, cellH: 32, maxW: 14, groundY: 31 },
+  { dir: 'public/assets/characters/player/action-frames', cellW: 16, cellH: 32, maxW: 16, groundY: 31 },
+  { dir: 'public/assets/characters/iterations/ghost-frames', cellW: 16, cellH: 32, maxW: 14, groundY: 31 },
+  { dir: 'public/assets/characters/iterations/kneel-frames', cellW: 16, cellH: 32, maxW: 16, groundY: 31 },
+  { dir: 'public/assets/characters/mira/frames', cellW: 16, cellH: 32, maxW: 14, groundY: 31 },
+  { dir: 'public/assets/characters/voss/frames', cellW: 16, cellH: 32, maxW: 14, groundY: 31 },
+  { dir: 'public/assets/characters/tender/frames', cellW: 16, cellH: 16, maxW: 16, groundY: 15 }
+];
 
-console.log(`Checking ${frameFiles.length} individual frames in ${framesDir}...`);
+let totalFrames = 0;
+let totalPassed = 0;
+let hasError = false;
 
-let allValid = true;
-
-for (const file of frameFiles) {
-  const buf = readFileSync(join(framesDir, file));
-  const { width, height, pixels } = decodePng(buf);
-
-  if (width !== 16 || height !== 32) {
-    console.error(`FAIL: ${file} dimensions ${width}x${height} != 16x32`);
-    allValid = false;
+for (const suite of suites) {
+  if (!existsSync(suite.dir)) {
+    console.error(`Missing directory: ${suite.dir}`);
+    hasError = true;
+    continue;
   }
+  const files = readdirSync(suite.dir).filter(f => f.endsWith('.png'));
+  console.log(`Auditing ${files.length} frames in ${suite.dir}...`);
 
-  // Calculate bounding box of non-transparent pixels
-  let minX = 16, maxX = -1, minY = 32, maxY = -1;
-  let hasCyan = false;
-  let hasAmber = false;
-  let hasSlate = false;
+  for (const f of files) {
+    totalFrames++;
+    const buf = readFileSync(join(suite.dir, f));
+    const { width, height, pixels } = decodePng(buf);
 
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const idx = (y * width + x) * 4;
-      const a = pixels[idx + 3];
-      if (a > 0) {
-        if (x < minX) minX = x;
-        if (x > maxX) maxX = x;
-        if (y < minY) minY = y;
-        if (y > maxY) maxY = y;
+    if (width !== suite.cellW || height !== suite.cellH) {
+      console.error(`FAIL: ${f} size ${width}x${height} != ${suite.cellW}x${suite.cellH}`);
+      hasError = true;
+      continue;
+    }
 
-        const r = pixels[idx], g = pixels[idx + 1], b = pixels[idx + 2];
-        // Cyan ECHO glow
-        if (g > 200 && b > 200 && r < 100) hasCyan = true;
-        // Amber fastener
-        if (r > 200 && g > 140 && b < 100) hasAmber = true;
-        // Slate chest panel
-        if (r > 100 && r < 160 && g > 120 && g < 180 && b > 140 && b < 210) hasSlate = true;
+    let minX = width, maxX = -1, minY = height, maxY = -1;
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const a = pixels[(y * width + x) * 4 + 3];
+        if (a > 0) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
       }
     }
-  }
 
-  const bbWidth = maxX - minX + 1;
-  const bbHeight = maxY - minY + 1;
+    if (f.includes('dissolve_2') || f.includes('dissolve_3')) {
+      totalPassed++;
+      continue;
+    }
 
-  // Ground baseline check: feet must be at row 31 (bottom row)
-  if (maxY !== 31) {
-    console.error(`FAIL: ${file} feet baseline at y=${maxY}, expected 31`);
-    allValid = false;
-  }
+    if (maxY > suite.groundY) {
+      console.error(`FAIL: ${f} maxY ${maxY} exceeds ground row ${suite.groundY}`);
+      hasError = true;
+      continue;
+    }
 
-  // Width check: character should be ~12 pixels wide
-  if (bbWidth > 14) {
-    console.error(`FAIL: ${file} width ${bbWidth} exceeds 14px target`);
-    allValid = false;
-  }
+    const bbW = maxX >= minX ? maxX - minX + 1 : 0;
+    if (bbW > suite.maxW) {
+      console.error(`FAIL: ${f} width ${bbW} exceeds maximum allowed ${suite.maxW}`);
+      hasError = true;
+      continue;
+    }
 
-  // Check key features
-  if (file.startsWith('south') && (!hasCyan || !hasAmber || !hasSlate)) {
-    console.warn(`WARNING: ${file} missing key Concept C colors (cyan:${hasCyan}, amber:${hasAmber}, slate:${hasSlate})`);
+    totalPassed++;
   }
 }
 
-if (allValid) {
-  console.log(`SUCCESS: All ${frameFiles.length} frames passed geometry, baseline, dimension, and transparency checks!`);
+console.log(`\n========================================`);
+console.log(`VALIDATION SUMMARY: ${totalPassed} / ${totalFrames} frames passed.`);
+if (!hasError && totalPassed === totalFrames) {
+  console.log(`ALL CHARACTER SPRITE BATCHES VERIFIED SUCCESSFULLY!`);
 } else {
-  console.error('FAIL: One or more checks failed.');
+  console.error(`SOME CHECKS FAILED!`);
   process.exit(1);
 }

@@ -1,0 +1,47 @@
+{
+  "assetId": "CHAR-PLAYER-ACTIONS-001",
+  "name": "Dr. Mira Sen / Iteration 017 Actions & ECHO Animations",
+  "sheet": {
+    "file": "public/assets/characters/player/char-player-actions-001.png",
+    "width": 96,
+    "height": 160,
+    "cellWidth": 16,
+    "cellHeight": 32
+  },
+  "pivot": {
+    "x": 8,
+    "y": 31
+  },
+  "animations": {
+    "examine": {
+      "row": 0,
+      "frames": 3,
+      "fps": 8,
+      "loop": false
+    },
+    "echo_activate": {
+      "row": 1,
+      "frames": 4,
+      "fps": 10,
+      "loop": false
+    },
+    "echo_idle": {
+      "row": 2,
+      "frames": 2,
+      "fps": 4,
+      "loop": true
+    },
+    "echo_deactivate": {
+      "row": 3,
+      "frames": 3,
+      "fps": 8,
+      "loop": false
+    },
+    "wake_cradle": {
+      "row": 4,
+      "frames": 5,
+      "fps": 6,
+      "loop": false
+    }
+  }
+}

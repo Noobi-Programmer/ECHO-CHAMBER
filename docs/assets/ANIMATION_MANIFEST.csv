@@ -1,25 +1,25 @@
 anim_id,asset_id,name,priority,owner,directions,frames,frame_size,fps,loop,origin_px,trigger,status,notes
 ANIM-PLAYER-IDLE-SOUTH,CHAR-PLAYER-001,Player idle south,P0,Antigravity,SOUTH,1,16x32,0,n/a,"8,31 (bottom centre)",no input,PRODUCTION-READY,Approved Concept C 1-frame idle south. Transparent background; feet grounded at y=31.
 ANIM-PLAYER-WALK-SOUTH,CHAR-PLAYER-001,Player walk south,P0,Antigravity,SOUTH,4,16x32,8,loop,"8,31",movement input,PRODUCTION-READY,"Approved Concept C 4-frame walk south. Restrained adult movement; collision box (+-4 px wide, feet) preserved."
-ANIM-GHOST-WALK-SOUTH,CHAR-ITERATION-GHOST-001,Ghost walk south,P0,OmniRush,SOUTH,4,16x32,8,loop,"8,31",echo vignette path,IMPLEMENTED-PLACEHOLDER,Same timing as player so a replay of the player path matches.
+ANIM-GHOST-WALK-SOUTH,CHAR-ITERATION-GHOST-001,Ghost walk south,P0,Antigravity,SOUTH,4,16x32,8,loop,"8,31",echo vignette path,PRODUCTION-READY,Derived from Concept C player silhouette; faceless and spectral desaturated. Matches player walk timing exactly.
 ANIM-PLAYER-IDLE-NORTH,CHAR-PLAYER-001,Player idle north,P0,Antigravity,NORTH,1,16x32,0,n/a,"8,31 (bottom centre)",no input,PRODUCTION-READY,Approved Concept C 1-frame idle north. Asymmetrical diagonal back yoke.
 ANIM-PLAYER-WALK-NORTH,CHAR-PLAYER-001,Player walk north,P0,Antigravity,NORTH,4,16x32,8,loop,"8,31",movement input,PRODUCTION-READY,"Approved Concept C 4-frame walk north. Natural stride, amber heel accents."
-ANIM-GHOST-WALK-NORTH,CHAR-ITERATION-GHOST-001,Ghost walk north,P0,OmniRush,NORTH,4,16x32,8,loop,"8,31",echo vignette path,IMPLEMENTED-PLACEHOLDER,Same timing as player so a replay of the player path matches.
+ANIM-GHOST-WALK-NORTH,CHAR-ITERATION-GHOST-001,Ghost walk north,P0,Antigravity,NORTH,4,16x32,8,loop,"8,31",echo vignette path,PRODUCTION-READY,Derived from Concept C back silhouette; faceless and spectral desaturated.
 ANIM-PLAYER-IDLE-EAST,CHAR-PLAYER-001,Player idle east,P0,Antigravity,EAST,1,16x32,0,n/a,"8,31 (bottom centre)",no input,PRODUCTION-READY,Approved Concept C 1-frame idle east. Profile hair bun and slate chest wrap.
 ANIM-PLAYER-WALK-EAST,CHAR-PLAYER-001,Player walk east,P0,Antigravity,EAST,4,16x32,8,loop,"8,31",movement input,PRODUCTION-READY,"Approved Concept C 4-frame walk east. Also includes dedicated west walk in 4-dir atlas."
-ANIM-GHOST-WALK-EAST,CHAR-ITERATION-GHOST-001,Ghost walk east,P0,OmniRush,EAST,4,16x32,8,loop,"8,31",echo vignette path,IMPLEMENTED-PLACEHOLDER,Same timing as player so a replay of the player path matches.
-ANIM-GHOST-KNEEL,CHAR-ITERATION-KNEEL-001,Ghost kneel at plate,P0,OmniRush,S,1,16x32,0,hold,"8,31",opening + locker echo,IMPLEMENTED-PLACEHOLDER,
-ANIM-PLAYER-EXAMINE,CHAR-PLAYER-001,Examine/interact,P1,OmniRush,"S,N,E",3,16x32,8,once,"8,31",E pressed on object,MISSING,Hands out then back; optional.
-ANIM-PLAYER-ECHO-ACTIVATE,CHAR-PLAYER-001,Raise wrist (ECHO on),P1,OmniRush,"S,N,E",3,16x32,10,"once, hold last","8,31",Q pressed,MISSING,Cyan glow on wrist device.
-ANIM-PLAYER-ECHO-IDLE,CHAR-PLAYER-001,ECHO held idle,P1,OmniRush,"S,N,E",2,16x32,3,loop,"8,31","Q held, standing",MISSING,
-ANIM-PLAYER-WAKE,CHAR-PLAYER-001,Sit up from Cradle,P1,OmniRush,S,4,16x32,6,once,"8,31",after cold open,MISSING,Opening beat.
+ANIM-GHOST-WALK-EAST,CHAR-ITERATION-GHOST-001,Ghost walk east,P0,Antigravity,EAST,4,16x32,8,loop,"8,31",echo vignette path,PRODUCTION-READY,Derived from Concept C east silhouette. Matches player frame alignments.
+ANIM-GHOST-KNEEL,CHAR-ITERATION-KNEEL-001,Ghost kneel at plate,P0,Antigravity,S,1,16x32,0,hold,"8,31",opening + locker echo,PRODUCTION-READY,Kneeling at floor plate 3. Card slide and camera look-up included in char-iteration-kneel-001.png.
+ANIM-PLAYER-EXAMINE,CHAR-PLAYER-001,Examine/interact,P1,Antigravity,"S,N,E",3,16x32,8,once,"8,31",E pressed on object,PRODUCTION-READY,Hands reach forward to inspect and return; in char-player-actions-001.png.
+ANIM-PLAYER-ECHO-ACTIVATE,CHAR-PLAYER-001,Raise wrist (ECHO on),P1,Antigravity,"S,N,E",4,16x32,10,"once, hold last","8,31",Q pressed,PRODUCTION-READY,Wrist raises across chest with bright cyan flare; in char-player-actions-001.png.
+ANIM-PLAYER-ECHO-IDLE,CHAR-PLAYER-001,ECHO held idle,P1,Antigravity,"S,N,E",2,16x32,4,loop,"8,31","Q held, standing",PRODUCTION-READY,Pulsing cyan interface glow while ECHO mode is held.
+ANIM-PLAYER-WAKE,CHAR-PLAYER-001,Sit up from Cradle,P1,Antigravity,S,5,16x32,6,once,"8,31",after cold open,PRODUCTION-READY,5-frame sequence: prone in cradle to sitting and standing grounded.
 ANIM-PLAYER-DISSOLVE,CHAR-PLAYER-001,Dissolve (Lethe ending),P1,OmniRush,S,6,16x32,8,once,"8,31",END_LETHE,IMPLEMENTED-PLACEHOLDER,Today an alpha fade.
-ANIM-GHOST-WRITE,CHAR-ITERATION-GHOST-001,"Write on frost, stagger",P1,OmniRush,N,3,16x32,6,once,"8,31",Core door beat,MISSING,
+ANIM-GHOST-WRITE,CHAR-ITERATION-GHOST-001,"Write on frost, stagger",P1,Antigravity,N,4,16x32,6,once,"8,31",Core door beat,PRODUCTION-READY,Writing DONT ANSWER on frosted glass and dissolve breakup poses included in char-iteration-kneel-001.png.
 ANIM-GHOST-APPEAR,VFX-GHOST-DISSOLVE-001,Ghost appear,P1,OmniRush,n/a,4,16x32,12,once,"8,31",echo on / vignette start,IMPLEMENTED-PLACEHOLDER,
 ANIM-GHOST-DISSOLVE,VFX-GHOST-DISSOLVE-001,Ghost dissolve to static,P1,OmniRush,n/a,6,16x32,12,once,"8,31",vignette end / wipe,IMPLEMENTED-PLACEHOLDER,
-ANIM-MIRA-WALK-NORTH,CHAR-MIRA-001,Mira walk north,P1,OmniRush,N,4,16x32,8,loop,"8,31",storm/code echoes,IMPLEMENTED-PLACEHOLDER,Static pose today.
+ANIM-MIRA-WALK-NORTH,CHAR-MIRA-001,Mira walk north,P1,Antigravity,N,4,16x32,8,loop,"8,31",storm/code echoes,PRODUCTION-READY,Adult female researcher in pale lab coat; in char-mira-001.png.
 ANIM-VOSS-WAKE,CHAR-VOSS-WAKE-001,Voss sits up and stands,P1,OmniRush,S,5,16x32,6,once,"8,31",endings,MISSING,
-ANIM-TENDER-WALK,CHAR-TENDER-001,Tender walk,P1,OmniRush,E,2,16x10,7,loop,"8,9",lab entry,IMPLEMENTED-PLACEHOLDER,
+ANIM-TENDER-WALK,CHAR-TENDER-001,Tender walk,P1,Antigravity,E,4,16x16,8,loop,"8,15",lab entry,PRODUCTION-READY,4-legged articulated walk loop and floor cleaning sweep in char-tender-001.png.
 ANIM-WELL-PULSE,ENV-WELL-COLUMN-001,Well glow pulse,P1,OmniRush,n/a,4,32x44,4,loop,"16,43",core active,MISSING,Today a code flicker.
 ANIM-DOOR-OPEN,ENV-DOOR-LAB-001,Door slide open,P1,OmniRush,n/a,4,32x48,10,once,"16,47",door unlock,MISSING,Today a texture swap.
 ANIM-LETHE-PULL,PROP-LETHE-LEVER-001,Lever pull,P1,OmniRush,n/a,3,16x26,8,once,"8,25",Lethe pulled,MISSING,

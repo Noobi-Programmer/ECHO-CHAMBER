@@ -1,0 +1,26 @@
+{
+  "assetId": "CHAR-ITERATION-KNEEL-001",
+  "sheet": {
+    "file": "public/assets/characters/iterations/char-iteration-kneel-001.png",
+    "width": 128,
+    "height": 32,
+    "cellWidth": 16,
+    "cellHeight": 32
+  },
+  "pivot": {
+    "x": 8,
+    "y": 31
+  },
+  "poses": {
+    "kneel_plate": 0,
+    "slide_card": 1,
+    "look_up": 2,
+    "write_frost": 3,
+    "dissolve": [
+      4,
+      5,
+      6,
+      7
+    ]
+  }
+}
