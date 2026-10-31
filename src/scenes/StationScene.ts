@@ -859,7 +859,7 @@ export class StationScene extends Phaser.Scene {
       case 'terminal': {
         ui.recall(this.recallN);
         const remainingQa = T.qa.filter((q) => !this.qaAsked.has(q.id));
-        const pick = await ui.crtMenu({
+        await ui.crtMenu({
           title: 'ASPHODEL // CRADLE TERMINAL',
           systemTag: `STATION DIRECTIVE NODE 01 · SUBJECT RECALL ${this.recallN}%`,
           statusLines: [
@@ -867,19 +867,17 @@ export class StationScene extends Phaser.Scene {
             `LOCAL RECALL RATE: ${this.recallN}% ARCHIVED`,
             `CRADLE ANCHOR: STABLE // GEL CYCLE 17`,
           ],
-          menuPrompt: 'QUERY STATION ARCHIVE // SELECT LOG ENTRY:',
-          items: remainingQa.map((q) => ({
+          menuPrompt: remainingQa.length > 0 ? 'QUERY STATION ARCHIVE // SELECT LOG ENTRY:' : 'ALL RECORDS ARCHIVED // SELECT OPTION:',
+          items: T.qa.map((q) => ({
             id: q.id,
             label: q.q,
             response: q.a,
-            status: 'RESTORED RECORD',
+            status: this.qaAsked.has(q.id) ? 'ARCHIVED' : 'RESTORED RECORD',
           })),
+          onSelect: (id) => {
+            this.qaAsked.add(id);
+          },
         });
-        const qa = T.qa.find((q) => q.id === pick);
-        if (qa) {
-          this.qaAsked.add(qa.id);
-          await ui.orpheus(qa.a, 2200);
-        }
         break;
       }
       case 'locker':
