@@ -32,10 +32,10 @@ window.addEventListener('keydown', (e) => {
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) e.preventDefault();
 });
 
-ui.title(() => {
+ui.title((mode) => {
   audio.start();
   const scene = game.scene.getScene("Station") as unknown as StationScene;
-  scene.begin();
+  scene.begin(mode);
 });
 
 // test/debug hook (read-only state + helpers used by tests/playthrough.mjs)

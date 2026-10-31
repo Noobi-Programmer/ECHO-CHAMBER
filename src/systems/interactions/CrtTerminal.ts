@@ -69,6 +69,7 @@ export class CrtTerminal {
 
   /**
    * Interactive menu-driven CRT terminal for station queries
+   * Features a persistent live output pane directly displaying the selected record output.
    */
   openInteractiveMenu(config: CrtConfig): Promise<string> {
     return new Promise<string>((resolve) => {
@@ -88,7 +89,13 @@ export class CrtTerminal {
 
           const promptBox = el('div', 'crt-menu-prompt', body, config.menuPrompt ?? 'SELECT QUERY FROM BUFFER:');
           const menuList = el('div', 'crt-menu-list choices', body); // includes .choices for tests
-          const outputBox = el('div', 'crt-output-box hidden', body);
+
+          // Persistent live output panel on the terminal glass
+          const outputPanel = el('div', 'crt-output-panel', body);
+          const outputHeader = el('div', 'crt-output-header', outputPanel);
+          el('span', 'crt-output-tag', outputHeader, '◈ STATION ARCHIVE OUTPUT:');
+          const outputStatus = el('span', 'crt-output-status', outputHeader, 'DECRYPTED RECORD');
+          const outputContent = el('div', 'crt-output-content', outputPanel);
 
           const rawItems = [...(config.items ?? [])];
           const askedIds = new Set<string>();
@@ -96,167 +103,153 @@ export class CrtTerminal {
             if (it.status === 'ARCHIVED') askedIds.add(it.id);
           }
 
-          let selectedIndex = 0;
-          let removeMenuKeyListeners: (() => void) | null = null;
-          let menuActive = true;
-
-          const renderMenu = () => {
-            menuList.innerHTML = '';
-            menuList.classList.remove('hidden');
-            promptBox.classList.remove('hidden');
-            outputBox.classList.add('hidden');
-            outputBox.innerHTML = '';
-            menuActive = true;
-
-            const displayItems: CrtMenuItem[] = [...rawItems];
-            if (config.allowStepAway !== false) {
-              displayItems.push({
-                id: 'x',
-                label: 'Step away from terminal',
-                response: 'Terminal connection closed.',
-                status: 'DISCONNECT',
-              });
-            }
-
-            if (selectedIndex >= displayItems.length) {
-              selectedIndex = Math.max(0, displayItems.length - 1);
-            }
-
-            const btns = displayItems.map((item, i) => {
-              const isAsked = askedIds.has(item.id);
-              const btn = el('button', `crt-menu-item choice ${isAsked ? 'asked' : ''}`, menuList);
-              const statusTag = isAsked ? 'ARCHIVED' : (item.status ?? '');
-              btn.innerHTML = `
-                <span class="crt-item-num choice-n">[ ${i + 1} ]</span>
-                <span class="crt-item-label choice-l">${item.label}</span>
-                ${statusTag ? `<span class="crt-item-status choice-h">${statusTag}</span>` : ''}
-              `;
-              btn.addEventListener('mouseenter', () => {
-                selectedIndex = i;
-                updateSelection();
-              });
-              btn.addEventListener('click', (ev) => {
-                ev.stopPropagation();
-                chooseItem(item);
-              });
-              return btn;
+          const displayItems: CrtMenuItem[] = [...rawItems];
+          if (config.allowStepAway !== false) {
+            displayItems.push({
+              id: 'x',
+              label: 'Step away from terminal',
+              response: 'Terminal session disconnected.',
+              status: 'DISCONNECT',
             });
+          }
 
-            const updateSelection = () => {
-              btns.forEach((b, i) => b.classList.toggle('sel', i === selectedIndex));
-            };
-            updateSelection();
+          let selectedIndex = 0;
+          let typingTimer: ReturnType<typeof setTimeout> | null = null;
 
-            const onNavKey = (e: KeyboardEvent) => {
-              if (!menuActive) return;
-              const n = parseInt(e.key, 10);
-              if (n >= 1 && n <= displayItems.length) {
-                e.preventDefault();
-                chooseItem(displayItems[n - 1]);
-                return;
-              }
-              if (['ArrowUp', 'w', 'W'].includes(e.key)) {
-                selectedIndex = (selectedIndex + displayItems.length - 1) % displayItems.length;
-                updateSelection();
-                audio.blip();
-              }
-              if (['ArrowDown', 's', 'S'].includes(e.key)) {
-                selectedIndex = (selectedIndex + 1) % displayItems.length;
-                updateSelection();
-                audio.blip();
-              }
-              if (e.key === 'Enter' || e.key === 'e' || e.key === 'E') {
-                e.preventDefault();
-                chooseItem(displayItems[selectedIndex]);
-              }
-            };
-
-            window.addEventListener('keydown', onNavKey);
-            removeMenuKeyListeners = () => window.removeEventListener('keydown', onNavKey);
-          };
-
-          const chooseItem = async (item: CrtMenuItem) => {
-            if (removeMenuKeyListeners) {
-              removeMenuKeyListeners();
-              removeMenuKeyListeners = null;
-            }
-            menuActive = false;
-            audio.confirm();
-
+          const displayOutput = (item: CrtMenuItem, animate = true) => {
             if (item.id === 'x') {
-              resolvedValue = 'x';
-              closeFrame();
+              outputStatus.textContent = 'DISCONNECTED';
+              outputContent.textContent = 'Terminal session idle. Press [ 5 ] or Esc to step away.';
               return;
             }
 
+            outputStatus.textContent = 'DECRYPTED RECORD';
             resolvedValue = item.id;
             askedIds.add(item.id);
             if (config.onSelect) {
               void config.onSelect(item.id);
             }
 
-            menuList.classList.add('hidden');
-            promptBox.classList.add('hidden');
-            outputBox.classList.remove('hidden');
-            outputBox.innerHTML = `
-              <div class="crt-query-echo">QUERY: ${item.label}</div>
-              <div class="crt-query-divider">────────────────────────────────────</div>
-              <div class="crt-response-text"></div>
-              <div class="crt-return-hint" role="button" tabindex="0"><kbd>E</kbd> / <kbd>Enter</kbd> Return to index</div>
-            `;
+            updateItemStatuses();
 
-            const respEl = outputBox.querySelector('.crt-response-text') as HTMLElement;
-            const lines = Array.isArray(item.response) ? item.response : [item.response];
-
-            let skipResp = false;
-            const onSkip = (e: KeyboardEvent) => {
-              if (ADV_KEYS.has(e.key)) skipResp = true;
-            };
-            window.addEventListener('keydown', onSkip);
-
-            for (const line of lines) {
-              for (let c = 0; c < line.length; c++) {
-                if (skipResp) {
-                  respEl.textContent = lines.join('\n\n');
-                  break;
-                }
-                respEl.textContent += line[c];
-                if (c % 3 === 0 && line[c] !== ' ') audio.type();
-                await wait(line[c] === '.' ? 100 : 18);
-              }
-              if (!skipResp) {
-                respEl.textContent += '\n\n';
-                await wait(180);
-              }
+            const text = Array.isArray(item.response) ? item.response.join('\n\n') : item.response;
+            if (typingTimer) {
+              clearTimeout(typingTimer);
+              typingTimer = null;
             }
-            window.removeEventListener('keydown', onSkip);
 
-            // Wait for player to press Enter/E or click anywhere to return to query index
-            let returned = false;
-            const returnToMenu = (ev?: Event) => {
-              if (returned) return;
-              returned = true;
-              if (ev) {
-                ev.preventDefault();
-                ev.stopPropagation();
-              }
-              window.removeEventListener('keydown', onReturnKey);
-              outputBox.removeEventListener('click', returnToMenu);
-              audio.blip();
-              renderMenu();
-            };
+            if (!animate) {
+              outputContent.textContent = text;
+              return;
+            }
 
-            const onReturnKey = (e: KeyboardEvent) => {
-              if (ADV_KEYS.has(e.key)) {
-                returnToMenu(e);
+            outputContent.textContent = '';
+            let charIndex = 0;
+            audio.confirm();
+
+            const typeChar = () => {
+              if (charIndex < text.length) {
+                outputContent.textContent = text.slice(0, charIndex + 1);
+                if (charIndex % 3 === 0 && text[charIndex] !== ' ') audio.type();
+                charIndex++;
+                typingTimer = setTimeout(typeChar, text[charIndex - 1] === '.' ? 70 : 14);
+              } else {
+                typingTimer = null;
               }
             };
-
-            window.addEventListener('keydown', onReturnKey);
-            outputBox.addEventListener('click', returnToMenu);
+            typeChar();
           };
 
-          renderMenu();
+          const btns = displayItems.map((item, i) => {
+            const isAsked = askedIds.has(item.id);
+            const btn = el('button', `crt-menu-item choice ${isAsked ? 'asked' : ''}`, menuList);
+            const statusTag = isAsked ? 'ARCHIVED' : (item.status ?? '');
+            btn.innerHTML = `
+              <span class="crt-item-num choice-n">[ ${i + 1} ]</span>
+              <span class="crt-item-label choice-l">${item.label}</span>
+              <span class="crt-item-status choice-h">${statusTag}</span>
+            `;
+            btn.addEventListener('mouseenter', () => {
+              selectedIndex = i;
+              updateSelection();
+            });
+            btn.addEventListener('click', (ev) => {
+              ev.stopPropagation();
+              if (item.id === 'x') {
+                if (typingTimer) clearTimeout(typingTimer);
+                closeFrame();
+                return;
+              }
+              selectedIndex = i;
+              updateSelection();
+              displayOutput(item, true);
+            });
+            return btn;
+          });
+
+          const updateItemStatuses = () => {
+            displayItems.forEach((item, i) => {
+              const statusEl = btns[i]?.querySelector('.crt-item-status');
+              if (statusEl && item.id !== 'x') {
+                statusEl.textContent = askedIds.has(item.id) ? 'ARCHIVED' : (item.status ?? '');
+              }
+            });
+          };
+
+          const updateSelection = () => {
+            btns.forEach((b, i) => b.classList.toggle('sel', i === selectedIndex));
+          };
+          updateSelection();
+
+          // Display the first query's output immediately on open so text output answers are visible!
+          if (displayItems.length > 0 && displayItems[0].id !== 'x') {
+            displayOutput(displayItems[0], false);
+          }
+
+          const onNavKey = (e: KeyboardEvent) => {
+            const n = parseInt(e.key, 10);
+            if (n >= 1 && n <= displayItems.length) {
+              e.preventDefault();
+              selectedIndex = n - 1;
+              updateSelection();
+              if (displayItems[selectedIndex].id === 'x') {
+                if (typingTimer) clearTimeout(typingTimer);
+                closeFrame();
+              } else {
+                displayOutput(displayItems[selectedIndex], true);
+              }
+              return;
+            }
+            if (['ArrowUp', 'w', 'W'].includes(e.key)) {
+              e.preventDefault();
+              selectedIndex = (selectedIndex + displayItems.length - 1) % displayItems.length;
+              updateSelection();
+              audio.blip();
+              if (displayItems[selectedIndex].id !== 'x') {
+                displayOutput(displayItems[selectedIndex], false);
+              }
+            }
+            if (['ArrowDown', 's', 'S'].includes(e.key)) {
+              e.preventDefault();
+              selectedIndex = (selectedIndex + 1) % displayItems.length;
+              updateSelection();
+              audio.blip();
+              if (displayItems[selectedIndex].id !== 'x') {
+                displayOutput(displayItems[selectedIndex], false);
+              }
+            }
+            if (e.key === 'Enter' || e.key === 'e' || e.key === 'E') {
+              e.preventDefault();
+              if (displayItems[selectedIndex].id === 'x') {
+                if (typingTimer) clearTimeout(typingTimer);
+                closeFrame();
+              } else {
+                displayOutput(displayItems[selectedIndex], true);
+              }
+            }
+          };
+
+          window.addEventListener('keydown', onNavKey);
         },
         () => {
           resolve(resolvedValue);

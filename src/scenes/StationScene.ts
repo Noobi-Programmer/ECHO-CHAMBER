@@ -4,6 +4,7 @@ import { preloadCharacterSprites } from '../art/characterSprites';
 import { buildGrid, DOORS, MAP_H, MAP_W, roomAt, RoomId, TILE } from '../world/map';
 import { audio } from '../systems/audio';
 import { ui, wait } from '../systems/ui';
+import { saveSystem, EchoSaveV1 } from '../systems/save';
 import { ENDINGS, FRAGMENTS, FRAG_ERRORS, LOG, REC, SRC, T } from '../data/story';
 
 // ----------------------------------------------------------------- types
@@ -72,6 +73,7 @@ export class StationScene extends Phaser.Scene {
   idleClock = 0;
   nudges = new Set<string>();
   qaAsked = new Set<string>();
+  lastSaveClock = 0;
 
   constructor() { super('Station'); }
 
@@ -545,6 +547,13 @@ export class StationScene extends Phaser.Scene {
       this.walkClock += dt;
       const newFrame = Math.floor(this.walkClock / stepRate) % 4;
       if (newFrame !== oldFrame && (newFrame === 1 || newFrame === 3)) audio.footstep();
+      if (this.step !== 'intro' && this.step !== 'wake' && this.step !== 'ending') {
+        this.lastSaveClock += dt;
+        if (this.lastSaveClock >= 4000) {
+          this.lastSaveClock = 0;
+          this.autosave();
+        }
+      }
       this.idleClock = 0;
     } else {
       this.walkClock = 0;
@@ -672,7 +681,97 @@ export class StationScene extends Phaser.Scene {
   }
 
   // =============================================================== story
-  async begin() {
+  autosave() {
+    if (this.busy || ui.isModal() || this.step === 'intro' || this.step === 'wake' || this.step === 'ending') return;
+    const currentStep = (['card', 'lab', 'core', 'final'].includes(this.step) ? this.step : 'card') as 'card' | 'lab' | 'core' | 'final';
+    saveSystem.saveGame({
+      step: currentStep,
+      player: { x: this.player.x, y: this.player.y },
+      flags: [...this.f],
+      recallN: this.recallN,
+      qaAsked: [...this.qaAsked],
+      samples: this.samples,
+    });
+  }
+
+  async restore(save: EchoSaveV1) {
+    this.step = save.step;
+    this.f = new Set(save.flags.filter((fl) => !fl.startsWith('l_')));
+    this.recallN = save.recallN;
+    this.qaAsked = new Set(save.qaAsked);
+    this.samples = (save.samples || []).map((s) => ({ ...s }));
+
+    // Player position and sprite
+    this.player.setPosition(save.player.x, save.player.y);
+    this.player.setTexture('p_down_0');
+    this.player.setVisible(true);
+    this.player.setAlpha(1);
+
+    // Camera
+    const cam = this.cameras.main;
+    cam.centerOn(save.player.x, save.player.y);
+    cam.startFollow(this.player, true, 0.12, 0.12);
+
+    // Restore world objects based on flags
+    if (this.has('lockerOpen') && this.props.locker) {
+      this.props.locker.setTexture('locker_open');
+    }
+    if (this.has('cardTaken')) {
+      if (this.props.plate3) this.props.plate3.setTexture('plate_open');
+      if (this.props.card) this.props.card.setVisible(false);
+    }
+    if (this.has('labOpen')) {
+      if (this.props.readerLab) this.props.readerLab.setTexture('reader_green');
+      if (this.props.doorLab) this.props.doorLab.setTexture('door_lab_open');
+      this.openDoor('door_lab');
+    }
+    if (this.has('photoSeen')) {
+      if (this.props.photo) this.props.photo.setTexture('photo_up');
+      if (this.props.photoEcho) (this.props.photoEcho as Phaser.GameObjects.Image).setVisible(true);
+    }
+    if (this.has('marked')) {
+      if (this.props.myDot) this.props.myDot.setVisible(true);
+    }
+    if (this.has('coreOpen')) {
+      if (this.props.doorCore) this.props.doorCore.setTexture('door_core_open');
+      this.openDoor('door_core');
+    }
+    if (this.has('reflection') || this.has('letheOpen')) {
+      if (this.props.well) this.props.well.setTexture('well_dark');
+      if (this.props.letheGlass) this.props.letheGlass.setVisible(false);
+    }
+
+    // Audio setup according to step/room
+    audio.start();
+    if (save.step === 'core' || save.step === 'final') {
+      audio.playBGM(save.step === 'final' ? 'decision' : 'well');
+      audio.room('core');
+    } else if (save.step === 'lab') {
+      audio.playBGM('station');
+      audio.room('lab');
+    } else {
+      audio.ambience(true);
+      audio.room('cradle');
+    }
+
+    this.echoT = 0;
+    this.echoActive = false;
+    this.echoForced = null;
+    this.busy = false;
+    ui.showHud(true);
+    ui.recall(this.recallN);
+    await ui.fadeTo(0, 600);
+    ui.toast(`CYCLE 17 RESTORED · RECALL ${this.recallN}%`, 2500);
+  }
+
+  async begin(mode: 'new' | 'continue' = 'new') {
+    if (mode === 'continue') {
+      const save = saveSystem.getSave();
+      if (save) {
+        await this.restore(save);
+        return;
+      }
+    }
     this.setStep('intro');
     await ui.fadeTo(1, 10);
     // cold open: a memory, already in ECHO
@@ -733,6 +832,7 @@ export class StationScene extends Phaser.Scene {
     for (const l of T.orphWakeAfter) await ui.orpheus(l, 1200);
     this.setStep('card');
     ui.recall(3);
+    this.autosave();
     // nudge ECHO via ORPHEUS (it is allowed to encourage ECHO, not to guide)
     this.time.delayedCall(9000, () => { if (this.echoUses === 0) { void ui.orpheus(T.orphEchoTut, 3500); ui.hint('Hold <kbd>Q</kbd> — ECHO'); } });
   }
@@ -788,6 +888,7 @@ export class StationScene extends Phaser.Scene {
     });
     this.openDoor('door_lab');
     this.set('labOpen');
+    this.autosave();
   }
 
   private async onInteract(id: string) {
@@ -929,6 +1030,7 @@ export class StationScene extends Phaser.Scene {
         audio.cardPickup();
         for (const l of T.orphCardFound) await ui.orpheus(l, 900);
         this.recall(14);
+        this.autosave();
         break;
       case 'doorLab':
         if (this.has('cardTaken')) {
@@ -986,6 +1088,7 @@ export class StationScene extends Phaser.Scene {
             this.props.myDot.setVisible(true);
             await ui.say(T.markDone);
             void ui.orpheus('Noted.', 1400);
+            this.autosave();
           }
         }
         break;
@@ -1176,6 +1279,7 @@ export class StationScene extends Phaser.Scene {
     this.setStep('lab');
     this.recall(22);
     audio.playBGM('station');
+    this.autosave();
     const t = this.props.tender as unknown as Phaser.GameObjects.Sprite;
     t.setVisible(true).setPosition(150, 214);
     audio.tenderSkitter();
@@ -1222,6 +1326,7 @@ export class StationScene extends Phaser.Scene {
       this.recall(38);
       await ui.say('The seal on Mira\'s memories lifts. The recorder on her desk. The keypad by the Core door.');
       ui.hint(null);
+      this.autosave();
     } else if (m === 'V' && e === 'slot') {
       audio.deny();
       await ui.say(T.corrWrongMemory);
@@ -1287,6 +1392,7 @@ export class StationScene extends Phaser.Scene {
     this.props.doorCore.setTexture('door_core_open');
     this.openDoor('door_core');
     this.set('coreOpen');
+    this.autosave();
     this.dim = 0.35;
     audio.ambience(true, 0.7, 2);
     audio.playBGM('well');
@@ -1297,6 +1403,7 @@ export class StationScene extends Phaser.Scene {
   private async enterCore() {
     this.set('enteredCore');
     this.setStep('core');
+    this.autosave();
     await wait(700);
     await ui.orpheus(T.orphCoreTask, 2200);
   }
@@ -1364,6 +1471,7 @@ export class StationScene extends Phaser.Scene {
     await ui.fadeTo(0, 700);
     for (const l of T.orphCont) await ui.orpheus(l, 1200);
     this.recall(94);
+    this.autosave();
     ui.hint('The restoration log is on the terminal.');
     this.time.delayedCall(8000, () => ui.hint(null));
   }
@@ -1398,6 +1506,7 @@ export class StationScene extends Phaser.Scene {
     await ui.orpheus(T.orphLetheAvail, 1600);
     await ui.orpheus(T.orphSpeak, 1600);
     this.setStep('final');
+    this.autosave();
     audio.playBGM('decision');
     ui.hint('Answer at the Well console — or don\'t.');
     audio.startNameLoop(() => { if (this.step === 'final') void ui.orpheus(T.nameQ, 1500); }, 25000);
@@ -1442,6 +1551,7 @@ export class StationScene extends Phaser.Scene {
   // ----------------------------------------------------------- endings
   private finish(e: { title: string; tag: string; lines: string[] }) {
     this.step = 'ending';
+    saveSystem.clearSave();
     audio.stopNameLoop();
     ui.showHud(false);
     ui.hint(null);

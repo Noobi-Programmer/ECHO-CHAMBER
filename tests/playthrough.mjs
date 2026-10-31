@@ -12,7 +12,7 @@ let pass = 0, fail = 0;
 let lastState = null;
 const ok = (c, msg) => { if (c) { pass++; console.log('  ✓', msg); } else { fail++; console.log('  ✗', msg, lastState ? JSON.stringify(lastState) : ''); } };
 
-const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
+const b = await chromium.launch({ channel: process.env.PLAYWRIGHT_CHANNEL || 'msedge', args: ['--use-angle=d3d11', '--enable-webgl', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
 const p = await b.newPage({ viewport: { width: 1280, height: 720 } });
 const errors = [];
 p.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); if (m.text().startsWith('DBG')) console.log('    ', m.text()); });
@@ -56,7 +56,7 @@ async function interactAt(x, y) {
   await waitFor(async () => { const s = await st(); return !s.modal && !s.busy; }, 20000, 'idle before interact');
   await tp(x, y); await wait(250);
   for (let i = 0; i < 3; i++) {
-    await p.keyboard.press('e');
+    await p.keyboard.down('e'); await wait(80); await p.keyboard.up('e');
     if (await waitFor(async () => { const s = await st(); return s.modal || s.busy; }, 2500, 'interaction')) return;
   }
 }

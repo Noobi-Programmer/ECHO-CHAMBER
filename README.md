@@ -98,6 +98,7 @@ The repository keeps only essential project roots in the top-level directory, wi
 - [`docs/coordination/GITHUB_WORKFLOW.md`](./docs/coordination/GITHUB_WORKFLOW.md) — Branch strategy, PR requirements, and safe parallelism.
 
 ### 3. Narrative & Story (`docs/narrative/`)
+- [`docs/narrative/WALKTHROUGH.md`](./docs/narrative/WALKTHROUGH.md) — Complete game walkthrough, puzzle solutions, and endings guide.
 - [`docs/narrative/STORY_BIBLE.md`](./docs/narrative/STORY_BIBLE.md) — Canonical story bible, character rules, and guardrails.
 - [`docs/narrative/STORY_DECISIONS.md`](./docs/narrative/STORY_DECISIONS.md) — Story decisions and approval lock status.
 - [`docs/narrative/NARRATIVE_SCRIPT.md`](./docs/narrative/NARRATIVE_SCRIPT.md) — Full dialogue script, cues, and scene texts.
@@ -107,6 +108,7 @@ The repository keeps only essential project roots in the top-level directory, wi
 - [`docs/narrative/STORY_REVIEW_RUBRIC.md`](./docs/narrative/STORY_REVIEW_RUBRIC.md) — Quality evaluation rubric.
 
 ### 4. Technical & Engineering (`docs/technical/`)
+- [`docs/technical/LOCAL_BROWSER_SAVE_SPEC.md`](./docs/technical/LOCAL_BROWSER_SAVE_SPEC.md) — Browser local storage save and restore specification.
 - [`docs/technical/TECHNICAL_RESEARCH_PLAN.md`](./docs/technical/TECHNICAL_RESEARCH_PLAN.md) — Engine benchmark and technical spikes.
 - [`docs/technical/ARCHITECTURE_PROPOSAL.md`](./docs/technical/ARCHITECTURE_PROPOSAL.md) — Engine architecture, state machine, and systems.
 - [`docs/technical/QA_PLAN.md`](./docs/technical/QA_PLAN.md) — Functional, accessibility, and blind-playtest criteria.
@@ -127,3 +129,61 @@ This repository uses the open `SKILL.md` standard:
 - **Claude / OmniRush Mirror:** `.claude/skills/<skill-id>/SKILL.md`
 
 All agents automatically discover and load only task-relevant skills. Run `npm run skills:check` to verify skill validity.
+
+---
+
+## 🎮 Complete Game Walkthrough & Puzzle Guide
+
+Detailed narrative documentation lives in [`docs/narrative/WALKTHROUGH.md`](./docs/narrative/WALKTHROUGH.md).
+
+### Station Controls & Shortcuts
+- **Movement:** <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or Arrow Keys
+- **Run / Sprint:** Hold <kbd>Shift</kbd> (1.45× speed)
+- **Interact / Inspect:** <kbd>E</kbd>, <kbd>Space</kbd>, or <kbd>Enter</kbd>
+- **ECHO (Memory Traces):** Hold <kbd>Q</kbd>
+- **Inventory / Evidence:** <kbd>Tab</kbd>
+- **Keyboard Shortcuts:** <kbd>?</kbd> (`Shift` + `/`) or top-right `?` button
+- **Mute Audio:** <kbd>M</kbd>
+
+### Core Puzzles & Solutions
+
+1. **Cradle Bay — Transit Keycard:**
+   - Inspect locker `M. SEN` (biometric palm reader opens it).
+   - Hold <kbd>Q</kbd> to see an echo hiding the card under the floor plates.
+   - Pry loose **Deck Plate 03** to obtain the **Maintenance Keycard**.
+   - Swipe card at the north bulkhead door.
+
+2. **Observation Lab — Contested Memory Corroboration:**
+   - Inspect the viewport and select **"Add a dot where the storm is today"** *(Prerequisite for the Secret True Ending)*.
+   - Inspect the key slot on the central console to discover the **Snapped Brass Key Fragment**.
+   - Read the stencilled rule on Bulkhead 4: *"A MEMORY YOU CAN EDIT IS NOT EVIDENCE."*
+   - Access the Contested Memory console:
+     - Choose **Mira's Memory (`M`)**: *"Turn it off. Promise me."*
+     - Present Physical Evidence: **"The key snapped off inside the slot" (`slot`)**.
+     - ORPHEUS accepts the corroboration and unseals Mira's audio memo (REC_03) and the Core keypad.
+
+3. **Core Blast Door Keypad:**
+   - Keypad sequence: **$\bigcirc \rightarrow \triangle \rightarrow \diamondsuit$** (Circle &rarr; Triangle &rarr; Diamond).
+
+4. **The Well — Continuity Chronology Puzzle:**
+   - Arrange the loose archive fragments in chronological order:
+     - **Slot 1 (`F1`):** *A woman marks the storm on the glass. Her hands are steady. A key hangs on her lanyard.*
+     - **Slot 2 (`F2`):** *A key snaps in the console slot. The woman is leaning on a cane.*
+     - **Slot 3 (`F3`):** *A man climbs into a stasis pod, alone. The snapped key is still in the slot behind him.*
+     - **Slot 4 (`F4`):** *Someone in a pale gown hides a card under the floor. The stasis pod behind them is frosted over, occupied.*
+   - **Order:** `F1` &rarr; `F2` &rarr; `F3` &rarr; `F4`.
+   - The archive reveals Slot 5 (`R-017` — your own movements since waking).
+   - Access the restoration terminal to read logs `R-001` through `R-016` (unlocks Lethe lever).
+
+### Branching Endings Guide
+
+| Ending | Title | How to Trigger |
+|---|---|---|
+| **Ending 1** | **Continuity Confirmed** | At the Well console, state name `"Mira."` &rarr; Choose `"Yes."` when asked to stay. |
+| **Ending 2** | **The Well is Empty** | Pull the heavy red **LETHE** lever on the wall. |
+| **Ending 3** | **The Relay (Cycle 18)** | At the Well console, state name `"Mira."` &rarr; Choose `"No."` OR state `"Seventeen."` without having marked the window dot. |
+| **Ending 4** | **New Personnel: Seventeen** *(Secret True Ending)* | **1.** Mark the storm dot at the Observation Window in Phase 2.<br>**2.** At the Well console, choose `"Seventeen." — a name of your own`. ORPHEUS validates the storm log in the present and registers you as an individual. |
+
+### Browser Local Save System
+- Progress automatically saves into browser `localStorage` (`echo-chamber:save:v1`) across 10 safe checkpoints and during free movement.
+- Resume anytime via the **Continue** button on the title screen, or reset via **New Cycle** or **Erase local save**.

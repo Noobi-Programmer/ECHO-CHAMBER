@@ -1,5 +1,6 @@
 // DOM overlay UI: crisp text over the pixel canvas. Presentation only — no story logic.
 import { audio } from './audio';
+import { saveSystem } from './save';
 import { InspectionModal } from './interactions/InspectionModal';
 import { CrtTerminal } from './interactions/CrtTerminal';
 import { EvidenceComparison } from './interactions/EvidenceComparison';
@@ -75,7 +76,7 @@ class UI {
     this.subEl = el('div', 'sub hidden', root);
     this.promptEl = el('div', 'prompt hidden', root);
     this.hintEl = el('div', 'hint hidden', root);
-    this.panel = el('div', 'panel hidden', root, '<div class="panel-tag"></div><div class="panel-text"></div><div class="panel-more">E ▸</div>');
+    this.panel = el('div', 'hidden', root, '<div class="panel-tag"></div><div class="panel-text"></div><div class="panel-more">E ▸</div>');
     this.panelText = this.panel.querySelector('.panel-text')!;
     this.panelTag = this.panel.querySelector('.panel-tag')!;
     this.choiceEl = el('div', 'choices hidden', root);
@@ -300,33 +301,88 @@ class UI {
   }
 
   // ------------------------------------------------------------- title
-  title(onStart: () => void) {
-    const t = el('div', 'title', this.root, `
-      <div class="title-inner">
-        <div class="title-logo">ECHO<span>//</span>CHAMBER</div>
-        <div class="title-tag">A memory can be evidence. It can also be a lie.</div>
-        <button class="title-start">Wake up <kbd>Enter</kbd></button>
-        <div class="title-controls">
-          <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / arrows — move</div>
-          <div><kbd>Shift</kbd> — run</div>
-          <div><kbd>E</kbd> — inspect / continue</div>
-          <div><kbd>Q</kbd> (hold) — ECHO: see what this place remembers</div>
-          <div><kbd>Tab</kbd> — inventory / evidence</div>
-          <div><kbd>?</kbd> — keyboard shortcuts</div>
-          <div><kbd>M</kbd> — mute</div>
+  title(onStart: (mode: 'new' | 'continue') => void) {
+    const render = () => {
+      const saveSummary = saveSystem.getSaveSummary();
+      const hasSave = saveSummary !== null;
+
+      const buttonsHtml = hasSave
+        ? `
+        <div class="title-actions">
+          <button class="title-start title-continue">Continue <kbd>Enter</kbd>
+            <span class="title-save-info">${saveSummary.label} · Recall ${saveSummary.recall}% · ${saveSummary.date}</span>
+          </button>
+          <button class="title-secondary title-newgame">New Cycle</button>
         </div>
-        <div class="title-note">Headphones recommended · about 6–8 minutes</div>
-      </div>`);
-    this.fadeTo(0, 600);
-    const go = () => {
-      window.removeEventListener('keydown', onKey);
-      t.classList.add('out');
-      setTimeout(() => t.remove(), 700);
-      onStart();
+        <div class="title-tools">
+          <button class="title-erase">Erase local save</button>
+        </div>`
+        : `
+        <div class="title-actions">
+          <button class="title-start">Wake up <kbd>Enter</kbd></button>
+        </div>`;
+
+      const t = el('div', 'title', this.root, `
+        <div class="title-inner">
+          <div class="title-logo">ECHO<span>//</span>CHAMBER</div>
+          <div class="title-tag">A memory can be evidence. It can also be a lie.</div>
+          ${buttonsHtml}
+          <div class="title-controls">
+            <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / arrows — move</div>
+            <div><kbd>Shift</kbd> — run</div>
+            <div><kbd>E</kbd> — inspect / continue</div>
+            <div><kbd>Q</kbd> (hold) — ECHO: see what this place remembers</div>
+            <div><kbd>Tab</kbd> — inventory / evidence</div>
+            <div><kbd>?</kbd> — keyboard shortcuts</div>
+            <div><kbd>M</kbd> — mute</div>
+          </div>
+          <div class="title-note">Headphones recommended · about 6–8 minutes</div>
+        </div>`);
+
+      this.fadeTo(0, 600);
+
+      const go = (mode: 'new' | 'continue') => {
+        window.removeEventListener('keydown', onKey);
+        t.classList.add('out');
+        setTimeout(() => t.remove(), 700);
+        onStart(mode);
+      };
+
+      const onKey = (e: KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          go(hasSave ? 'continue' : 'new');
+        }
+      };
+      window.addEventListener('keydown', onKey);
+
+      if (hasSave) {
+        const contBtn = t.querySelector('.title-continue') as HTMLButtonElement | null;
+        const newBtn = t.querySelector('.title-newgame') as HTMLButtonElement | null;
+        const eraseBtn = t.querySelector('.title-erase') as HTMLButtonElement | null;
+
+        contBtn?.addEventListener('click', () => go('continue'));
+        newBtn?.addEventListener('click', () => {
+          if (window.confirm('Start a new cycle? Your saved progress on this browser will be reset.')) {
+            saveSystem.clearSave();
+            go('new');
+          }
+        });
+        eraseBtn?.addEventListener('click', () => {
+          if (window.confirm('Erase saved station progress on this browser?')) {
+            saveSystem.clearSave();
+            window.removeEventListener('keydown', onKey);
+            t.remove();
+            render();
+          }
+        });
+      } else {
+        const wakeBtn = t.querySelector('.title-start') as HTMLButtonElement | null;
+        wakeBtn?.addEventListener('click', () => go('new'));
+      }
     };
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } };
-    window.addEventListener('keydown', onKey);
-    t.querySelector('button')!.addEventListener('click', go);
+
+    render();
   }
 
   // ------------------------------------------------------------- ORPHEUS (non-modal)
@@ -359,6 +415,7 @@ class UI {
   // ------------------------------------------------------------- modal inspect panel
   async say(text: string, tag = ''): Promise<void> {
     this.modal++;
+    this.panel.classList.add('panel');
     this.panel.classList.remove('hidden');
     this.panelTag.textContent = tag;
     this.panelTag.style.display = tag ? '' : 'none';
@@ -382,6 +439,7 @@ class UI {
     await advanced;
     window.removeEventListener('keydown', onKey);
     this.panel.removeEventListener('click', onClick);
+    this.panel.classList.remove('panel');
     this.panel.classList.add('hidden');
     audio.blip();
     this.modal--;
