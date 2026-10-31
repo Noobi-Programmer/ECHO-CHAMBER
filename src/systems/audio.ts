@@ -110,7 +110,8 @@ class AudioDirector {
     if (!this.ctx) return null;
     if (this.buffers.has(filename)) return this.buffers.get(filename)!;
 
-    const base = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) || './';
+    const metaEnv = (import.meta as unknown as { env?: { BASE_URL?: string } }).env;
+    const base = metaEnv?.BASE_URL || './';
     const cleanBase = base.endsWith('/') ? base : base + '/';
     const paths = [
       `${cleanBase}assets/audio/${filename}`,
