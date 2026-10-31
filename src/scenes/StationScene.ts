@@ -656,7 +656,7 @@ export class StationScene extends Phaser.Scene {
       if (!this.has('lockerOpen')) n('door', this.has('doorTried') && tIn > 45000, 'The door wants Dr. Sen\'s card. Where would she keep it?');
     }
     if (s === 'lab') {
-      if (!this.has('seenContested')) n('console', tIn > 40000, 'Something happened at the console. Look back there.');
+      if (!this.has('seenContested')) n('console', tIn > 40000, 'Something happened at the console. Stand near it and hold <kbd>Q</kbd> to look back.');
       if (this.has('seenContested') && !this.has('slotSeen')) n('slot', tIn > 70000, 'Two memories disagree. What does the console itself show now?');
       if (this.has('slotSeen') && !this.has('corroborated')) n('corr', tIn > 90000, 'Use the console to check which memory the present supports.');
       if (this.has('corroborated') && !this.has('coreOpen')) n('door', this.time.now - this.corrAt > 30000, 'She knew the way into the Core. Look back at the keypad.');
@@ -1304,7 +1304,7 @@ export class StationScene extends Phaser.Scene {
   private async consoleInteract(echo: boolean) {
     if (echo && this.has('seenContested') && !this.has('corroborated')) { await ui.say(T.contestedInspect, SRC.CONTESTED); return; }
     await ui.say(T.console1);
-    if (!this.has('seenContested')) { await ui.say(T.consoleNudge); return; }
+    if (!this.has('seenContested')) { await ui.say(T.consoleNudge); ui.hint('Stand near the console and hold <kbd>Q</kbd> to look back.'); return; }
     if (this.has('corroborated')) { await ui.say('The memory here is corroborated. Mira turned the key. He stopped her.'); return; }
     const m = await ui.choose('CONTESTED MEMORY — which version does the present support?', [
       { id: 'M', label: 'Mira\'s memory: she turned the key — "Turn it off. Promise me."', hint: 'M.SEN' },
