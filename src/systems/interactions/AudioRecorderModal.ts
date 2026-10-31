@@ -4,6 +4,20 @@ import type { RecorderTrack } from './types';
 
 const ADV_KEYS = new Set(['e', 'E', ' ', 'Enter']);
 
+const VOICE_MAP: Record<string, string> = {
+  REC_01: 'vo-voss-rec01.ogg',
+  REC_03: 'vo-mira-rec03.ogg',
+  REC_04: 'vo-voss-rec04.ogg',
+  REC_05: 'vo-mira-rec05.ogg',
+};
+
+const VOICE_DURATIONS: Record<string, number> = {
+  REC_01: 31000,
+  REC_03: 57000,
+  REC_04: 46000,
+  REC_05: 15000,
+};
+
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls: string, parent?: HTMLElement, html = '') {
   const e = document.createElement(tag);
   e.className = cls;
@@ -125,14 +139,22 @@ export class AudioRecorderModal {
     this.currentLineIndex = 0;
     playBtn.textContent = '❚❚ PAUSE';
 
+    const voiceFile = VOICE_MAP[track.id];
+    if (voiceFile) {
+      void audio.playVoice(voiceFile);
+    }
+
+    const totalMs = VOICE_DURATIONS[track.id] || (track.lines.length * 6000);
+    const lineDuration = Math.max(3000, Math.floor(totalMs / Math.max(1, track.lines.length)));
+
     const renderCurrentLine = () => {
       const line = track.lines[this.currentLineIndex] || '';
       transcriptText.textContent = line;
       
       const pct = ((this.currentLineIndex + 1) / track.lines.length) * 100;
       progressFill.style.width = `${pct}%`;
-      const curSec = Math.round((this.currentLineIndex + 1) * 8);
-      const totSec = track.lines.length * 8;
+      const totSec = Math.floor(totalMs / 1000);
+      const curSec = Math.min(totSec, Math.floor(((this.currentLineIndex + 1) / track.lines.length) * totSec));
       timeDisplay.textContent = `00:${curSec.toString().padStart(2, '0')} / 00:${totSec.toString().padStart(2, '0')}`;
       
       audio.type();
@@ -144,8 +166,6 @@ export class AudioRecorderModal {
     const scheduleNextLine = () => {
       clearTimeout(this.lineTimer);
       if (!this.isPlaying) return;
-      const curLine = track.lines[this.currentLineIndex] || '';
-      const lineDuration = Math.max(2800, curLine.length * 55);
 
       this.lineTimer = window.setTimeout(() => {
         if (this.currentLineIndex < track.lines.length - 1) {
@@ -167,6 +187,7 @@ export class AudioRecorderModal {
       playBtn.textContent = this.isPlaying ? '❚❚ PAUSE' : '▶ RESUME';
       audio.blip();
       if (this.isPlaying) {
+        if (voiceFile) void audio.playVoice(voiceFile);
         if (this.currentLineIndex >= track.lines.length - 1) {
           this.currentLineIndex = 0;
           renderCurrentLine();
@@ -174,6 +195,7 @@ export class AudioRecorderModal {
         scheduleNextLine();
       } else {
         clearTimeout(this.lineTimer);
+        audio.stopVoice();
       }
     });
 
@@ -285,6 +307,7 @@ export class AudioRecorderModal {
     clearTimeout(this.lineTimer);
     cancelAnimationFrame(this.animFrame);
     this.isPlaying = false;
+    audio.stopVoice();
   }
 
   private destroy() {

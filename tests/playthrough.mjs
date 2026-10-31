@@ -15,7 +15,7 @@ const ok = (c, msg) => { if (c) { pass++; console.log('  ✓', msg); } else { fa
 const b = await chromium.launch({ channel: process.env.PLAYWRIGHT_CHANNEL || 'msedge', args: ['--use-angle=d3d11', '--enable-webgl', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
 const p = await b.newPage({ viewport: { width: 1280, height: 720 } });
 const errors = [];
-p.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); if (m.text().startsWith('DBG')) console.log('    ', m.text()); });
+p.on('console', (m) => { if (m.type() === 'error' && !m.text().includes('favicon')) errors.push(m.text()); if (m.text().startsWith('DBG')) console.log('    ', m.text()); });
 p.on('pageerror', (e) => errors.push('PAGEERROR ' + e.message));
 const st = async () => (lastState = await p.evaluate(() => window.__ECHO.scene.debug()));
 const tp = (x, y) => p.evaluate(([x, y]) => window.__ECHO.scene.teleport(x, y), [x, y]);

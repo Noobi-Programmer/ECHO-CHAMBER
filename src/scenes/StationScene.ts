@@ -786,10 +786,12 @@ export class StationScene extends Phaser.Scene {
     g.setAlpha(0.9);
     ui.source(SRC.UNREG);
     await wait(600);
+    const vpOpen = audio.playVoice('vo-iter-open-01.ogg');
     ui.subtitle(T.open016a, SRC.UNREG, 2200);
     await wait(2300);
     ui.subtitle(T.open016b, SRC.UNREG, 2200);
     await wait(1600);
+    await vpOpen;
     g.setTexture('ghost_up_0');
     await wait(1100);
     audio.static();
@@ -983,7 +985,12 @@ export class StationScene extends Phaser.Scene {
         break;
       }
       case 'locker':
-        if (echo && this.has('lockerOpen')) { await ui.say(T.lockerEcho, SRC.UNREG); break; }
+        if (echo && this.has('lockerOpen')) {
+          const vpLocker = audio.playVoice('vo-iter-locker.ogg');
+          await ui.say(T.lockerEcho, SRC.UNREG);
+          await vpLocker;
+          break;
+        }
         if (!this.has('lockerOpen')) {
           await this.scanLocker();
           audio.lockerOpen();
@@ -1371,8 +1378,10 @@ export class StationScene extends Phaser.Scene {
     await wait(900);
     g.setAlpha(0.9);
     await wait(1000);
+    const vpGhost = audio.playVoice('vo-iter-no.ogg');
     ui.subtitle(T.ghostNo, SRC.UNREG, 1800);
     await wait(1600);
+    await vpGhost;
     g.setTexture('ghost_write');
     const writing = ui.frost("DON'T ANSWER", 10);
     await wait(3100);
@@ -1658,7 +1667,9 @@ export class StationScene extends Phaser.Scene {
     ghosts.forEach((g) => g.destroy());
     const v = await this.wakeVoss();
     this.player.setVisible(false);
+    const vpLethe = audio.playVoice('vo-mira-rec05.ogg');
     for (const l of REC.rec05) { ui.subtitle(l, 'REC_05 · M. SEN', 2600); await wait(2700); }
+    await vpLethe;
     audio.motif('minor');
     v.setTexture('voss_up');
     await wait(2500);
