@@ -4,3 +4,4 @@ dist/
 *.zip
 .plan-backup-*/
 quarantine/
+.DS_Store
