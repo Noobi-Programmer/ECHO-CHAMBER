@@ -1,0 +1,16 @@
+asset_id,filename,path,category,dimensions,transparency,interaction_id,state,status,notes
+ILL-CRADLE-CHAMBER-001,cradle-chamber-001.png,public/assets/illustrations/cradle/cradle-chamber-001.png,cradle,1672x941,opaque,cradle,present,DELIVERED,Empty medical reconstruction chamber close-up.
+ILL-VOSS-POD-001,voss-pod-001.png,public/assets/illustrations/cradle/voss-pod-001.png,cradle,1672x940,opaque,vossPod,present,DELIVERED,Voss preserved behind frosted stasis glass; no replacement character sprite supplied.
+ILL-MUG-PRESENT-001,mug-present-001.png,public/assets/illustrations/cradle/mug-present-001.png,prop,1448x1086,opaque,mug,present,DELIVERED,Cracked/glued handle state.
+ILL-MUG-ECHO-001,mug-echo-001.png,public/assets/illustrations/cradle/mug-echo-001.png,prop,1448x1086,opaque,mug,echo,DELIVERED,Source-image edit; restored handle and small smiley with steam.
+ILL-LOCKER-INTERIOR-001,locker-interior-001.png,public/assets/illustrations/cradle/locker-interior-001.png,cradle,1448x1086,opaque,locker,present,DELIVERED,Card reveal area deliberately left clear.
+ILL-FLOOR-PLATE-001,floor-plate-001.png,public/assets/illustrations/cradle/floor-plate-001.png,cradle,1448x1086,opaque,plate3,present,DELIVERED,Card omitted for code-driven reveal.
+ILL-OBS-WINDOW-001,observation-window-001.png,public/assets/illustrations/observation-lab/observation-window-001.png,observation-lab,1672x941,opaque,window,present,DELIVERED,Ice giant and Eye storm; dot layers remain a code/UI concern.
+ILL-WALL-INSCRIPTION-001,wall-inscription-001.png,public/assets/illustrations/observation-lab/wall-inscription-001.png,observation-lab,1448x1086,opaque,wallRule,present,DELIVERED,Blank central panel by master prompt; game renders wording.
+ILL-CONSOLE-EVIDENCE-001,console-evidence-001.png,public/assets/illustrations/observation-lab/console-evidence-001.png,observation-lab,1448x1086,opaque,keySlot,present,DELIVERED,Console with snapped shaft.
+ILL-CONSOLE-KEY-DETAIL-001,console-key-detail-001.png,public/assets/illustrations/observation-lab/console-key-detail-001.png,observation-lab,1448x1086,opaque,keySlot,present,DELIVERED,Separate macro inspection of key mechanism.
+ILL-PHOTO-PRESENT-001,photograph-present-001.png,public/assets/illustrations/observation-lab/photograph-present-001.png,prop,1448x1086,opaque,photo,present,DELIVERED,Source photo damage state.
+ILL-PHOTO-ECHO-001,photograph-echo-001.png,public/assets/illustrations/observation-lab/photograph-echo-001.png,prop,1448x1086,opaque,photo,echo,DELIVERED,Source-image edit restores only photo damage.
+ILL-RESEARCH-DESK-001,research-desk-001.png,public/assets/illustrations/observation-lab/research-desk-001.png,observation-lab,1448x1086,opaque,vossDesk,present,DELIVERED,Recorder and unmarked evidence objects.
+ILL-WELL-ARCHIVE-001,well-archive-001.png,public/assets/illustrations/well/well-archive-001.png,well,1672x941,opaque,wellConsole,present,DELIVERED,Archive console close-up.
+ILL-LETHE-LEVER-001,lethe-lever-001.png,public/assets/illustrations/well/lethe-lever-001.png,well,1448x1086,opaque,lethe,present,DELIVERED,Closed protective glass; opening/pull are code-driven.
