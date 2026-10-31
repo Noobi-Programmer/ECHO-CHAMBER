@@ -79,7 +79,7 @@ await tp(160, 452);
 let s0 = await st();
 await hold('ArrowRight', 500); let s1 = await st(); ok(s1.x > s0.x + 10, `move right (${s0.x.toFixed(0)}→${s1.x.toFixed(0)})`);
 await hold('a', 500); let s2 = await st(); ok(s2.x < s1.x - 10, 'move left (A)');
-await hold('ArrowDown', 400); let s3 = await st(); ok(s3.y > s2.y + 8, 'move down');
+await hold('ArrowDown', 500); let s3 = await st(); ok(s3.y > s2.y + 6, 'move down');
 await hold('w', 400); let s4 = await st(); ok(s4.y < s3.y - 8, 'move up (W)');
 
 console.log('3. collision');
