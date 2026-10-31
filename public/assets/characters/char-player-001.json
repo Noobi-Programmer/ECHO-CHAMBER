@@ -1,169 +1,294 @@
 {
-  "assetId": "CHAR-PLAYER-001",
-  "name": "Dr. Mira Sen / Iteration 017 (Concept C Production)",
-  "version": "2.0.0-approved-concept-c",
-  "status": "PRODUCTION-READY",
-  "source": "Original hand-crafted native pixel-art engine adhering to approved Concept C",
-  "character": {
-    "identity": "Dr. Mira Sen / Iteration 017",
-    "gender": "Female adult protagonist",
-    "apparel": "Asymmetrical graphite-grey research-station jacket with distinctive slate-grey chest panel, dark graphite trousers, utility belt with pouches & amber fastener, heavy boots",
-    "distinctive_features": "Asymmetric slate chest flap, high dark hair bun with loose strands, glowing cyan ECHO wrist device on left wrist"
-  },
-  "engine": {
-    "target": "Phaser 3.90.0",
-    "resolution": "320x180",
-    "pixelArt": true,
-    "scaleMode": "NEAREST"
-  },
+  "asset": "player",
+  "sheet": "../sheets/char-player-001.png",
   "cell": {
-    "width": 16,
-    "height": 32,
-    "character_bounds": {
-      "width": 12,
-      "height": 27
-    },
-    "pivot": {
-      "x": 8,
-      "y": 31,
-      "description": "bottom-centre, feet grounded at y=31"
-    },
-    "transparent_background": true
+    "w": 16,
+    "h": 32
   },
-  "sheets": {
-    "full_4dir": {
-      "file": "public/assets/characters/player/char-player-001.png",
-      "width": 80,
-      "height": 128,
-      "columns": 5,
-      "rows": 4,
-      "directions": [
-        "south",
-        "north",
-        "east",
-        "west"
-      ]
+  "grid": {
+    "cols": 5,
+    "rows": 4
+  },
+  "origin": {
+    "x": 8,
+    "y": 31
+  },
+  "directions": [
+    "S",
+    "N",
+    "E",
+    "W"
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "name": "s_idle",
+      "x": 0,
+      "y": 0,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "idle"
     },
-    "compat_3dir": {
-      "file": "public/assets/characters/player/char-player-001-3row.png",
-      "width": 80,
-      "height": 96,
-      "columns": 5,
-      "rows": 3,
-      "directions": [
-        "south",
-        "north",
-        "east"
-      ],
-      "west_handling": "mirror east via setFlipX(true)"
+    {
+      "index": 1,
+      "name": "s_walk_1",
+      "x": 16,
+      "y": 0,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "walk"
+    },
+    {
+      "index": 2,
+      "name": "s_walk_2",
+      "x": 32,
+      "y": 0,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "walk"
+    },
+    {
+      "index": 3,
+      "name": "s_walk_3",
+      "x": 48,
+      "y": 0,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "walk"
+    },
+    {
+      "index": 4,
+      "name": "s_walk_4",
+      "x": 64,
+      "y": 0,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "walk"
+    },
+    {
+      "index": 5,
+      "name": "n_idle",
+      "x": 0,
+      "y": 32,
+      "w": 16,
+      "h": 32,
+      "direction": "N",
+      "action": "idle"
+    },
+    {
+      "index": 6,
+      "name": "n_walk_1",
+      "x": 16,
+      "y": 32,
+      "w": 16,
+      "h": 32,
+      "direction": "N",
+      "action": "walk"
+    },
+    {
+      "index": 7,
+      "name": "n_walk_2",
+      "x": 32,
+      "y": 32,
+      "w": 16,
+      "h": 32,
+      "direction": "N",
+      "action": "walk"
+    },
+    {
+      "index": 8,
+      "name": "n_walk_3",
+      "x": 48,
+      "y": 32,
+      "w": 16,
+      "h": 32,
+      "direction": "N",
+      "action": "walk"
+    },
+    {
+      "index": 9,
+      "name": "n_walk_4",
+      "x": 64,
+      "y": 32,
+      "w": 16,
+      "h": 32,
+      "direction": "N",
+      "action": "walk"
+    },
+    {
+      "index": 10,
+      "name": "e_idle",
+      "x": 0,
+      "y": 64,
+      "w": 16,
+      "h": 32,
+      "direction": "E",
+      "action": "idle"
+    },
+    {
+      "index": 11,
+      "name": "e_walk_1",
+      "x": 16,
+      "y": 64,
+      "w": 16,
+      "h": 32,
+      "direction": "E",
+      "action": "walk"
+    },
+    {
+      "index": 12,
+      "name": "e_walk_2",
+      "x": 32,
+      "y": 64,
+      "w": 16,
+      "h": 32,
+      "direction": "E",
+      "action": "walk"
+    },
+    {
+      "index": 13,
+      "name": "e_walk_3",
+      "x": 48,
+      "y": 64,
+      "w": 16,
+      "h": 32,
+      "direction": "E",
+      "action": "walk"
+    },
+    {
+      "index": 14,
+      "name": "e_walk_4",
+      "x": 64,
+      "y": 64,
+      "w": 16,
+      "h": 32,
+      "direction": "E",
+      "action": "walk"
+    },
+    {
+      "index": 15,
+      "name": "w_idle",
+      "x": 0,
+      "y": 96,
+      "w": 16,
+      "h": 32,
+      "direction": "W",
+      "action": "idle"
+    },
+    {
+      "index": 16,
+      "name": "w_walk_1",
+      "x": 16,
+      "y": 96,
+      "w": 16,
+      "h": 32,
+      "direction": "W",
+      "action": "walk"
+    },
+    {
+      "index": 17,
+      "name": "w_walk_2",
+      "x": 32,
+      "y": 96,
+      "w": 16,
+      "h": 32,
+      "direction": "W",
+      "action": "walk"
+    },
+    {
+      "index": 18,
+      "name": "w_walk_3",
+      "x": 48,
+      "y": 96,
+      "w": 16,
+      "h": 32,
+      "direction": "W",
+      "action": "walk"
+    },
+    {
+      "index": 19,
+      "name": "w_walk_4",
+      "x": 64,
+      "y": 96,
+      "w": 16,
+      "h": 32,
+      "direction": "W",
+      "action": "walk"
     }
-  },
+  ],
   "animations": {
-    "fps": 8,
-    "frame_order": [
-      "idle",
-      "walk_0",
-      "walk_1",
-      "walk_2",
-      "walk_3"
-    ],
-    "south": {
-      "idle": {
-        "row": 0,
-        "col": 0,
-        "frameIndex": 0
-      },
-      "walk": {
-        "row": 0,
-        "cols": [
-          1,
-          2,
-          3,
-          4
-        ],
-        "frameIndices": [
-          1,
-          2,
-          3,
-          4
-        ],
-        "loop": true
-      }
+    "idle_S": {
+      "frames": [
+        0
+      ],
+      "fps": 0,
+      "loop": false
     },
-    "north": {
-      "idle": {
-        "row": 1,
-        "col": 0,
-        "frameIndex": 5
-      },
-      "walk": {
-        "row": 1,
-        "cols": [
-          1,
-          2,
-          3,
-          4
-        ],
-        "frameIndices": [
-          6,
-          7,
-          8,
-          9
-        ],
-        "loop": true
-      }
+    "walk_S": {
+      "frames": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "fps": 8,
+      "loop": true
     },
-    "east": {
-      "idle": {
-        "row": 2,
-        "col": 0,
-        "frameIndex": 10
-      },
-      "walk": {
-        "row": 2,
-        "cols": [
-          1,
-          2,
-          3,
-          4
-        ],
-        "frameIndices": [
-          11,
-          12,
-          13,
-          14
-        ],
-        "loop": true
-      }
+    "idle_N": {
+      "frames": [
+        5
+      ],
+      "fps": 0,
+      "loop": false
     },
-    "west": {
-      "idle": {
-        "row": 3,
-        "col": 0,
-        "frameIndex": 15
-      },
-      "walk": {
-        "row": 3,
-        "cols": [
-          1,
-          2,
-          3,
-          4
-        ],
-        "frameIndices": [
-          16,
-          17,
-          18,
-          19
-        ],
-        "loop": true
-      }
+    "walk_N": {
+      "frames": [
+        6,
+        7,
+        8,
+        9
+      ],
+      "fps": 8,
+      "loop": true
+    },
+    "idle_E": {
+      "frames": [
+        10
+      ],
+      "fps": 0,
+      "loop": false
+    },
+    "walk_E": {
+      "frames": [
+        11,
+        12,
+        13,
+        14
+      ],
+      "fps": 8,
+      "loop": true
+    },
+    "idle_W": {
+      "frames": [
+        15
+      ],
+      "fps": 0,
+      "loop": false
+    },
+    "walk_W": {
+      "frames": [
+        16,
+        17,
+        18,
+        19
+      ],
+      "fps": 8,
+      "loop": true
     }
-  },
-  "individual_frames_directory": "public/assets/characters/player/frames/",
-  "previews": {
-    "contact_sheet": "public/assets/characters/previews/player-contact-sheet.png",
-    "walk_gif": "public/assets/characters/previews/player-walk-preview.gif",
-    "native_preview": "public/assets/characters/previews/player-native-preview.png"
   }
 }

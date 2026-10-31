@@ -1,0 +1,294 @@
+{
+  "asset": "iteration-ghost",
+  "sheet": "../sheets/char-iteration-ghost-001.png",
+  "cell": {
+    "w": 16,
+    "h": 32
+  },
+  "grid": {
+    "cols": 5,
+    "rows": 4
+  },
+  "origin": {
+    "x": 8,
+    "y": 31
+  },
+  "directions": [
+    "S",
+    "N",
+    "E",
+    "W"
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "name": "s_idle",
+      "x": 0,
+      "y": 0,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "idle"
+    },
+    {
+      "index": 1,
+      "name": "s_walk_1",
+      "x": 16,
+      "y": 0,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "walk"
+    },
+    {
+      "index": 2,
+      "name": "s_walk_2",
+      "x": 32,
+      "y": 0,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "walk"
+    },
+    {
+      "index": 3,
+      "name": "s_walk_3",
+      "x": 48,
+      "y": 0,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "walk"
+    },
+    {
+      "index": 4,
+      "name": "s_walk_4",
+      "x": 64,
+      "y": 0,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "walk"
+    },
+    {
+      "index": 5,
+      "name": "n_idle",
+      "x": 0,
+      "y": 32,
+      "w": 16,
+      "h": 32,
+      "direction": "N",
+      "action": "idle"
+    },
+    {
+      "index": 6,
+      "name": "n_walk_1",
+      "x": 16,
+      "y": 32,
+      "w": 16,
+      "h": 32,
+      "direction": "N",
+      "action": "walk"
+    },
+    {
+      "index": 7,
+      "name": "n_walk_2",
+      "x": 32,
+      "y": 32,
+      "w": 16,
+      "h": 32,
+      "direction": "N",
+      "action": "walk"
+    },
+    {
+      "index": 8,
+      "name": "n_walk_3",
+      "x": 48,
+      "y": 32,
+      "w": 16,
+      "h": 32,
+      "direction": "N",
+      "action": "walk"
+    },
+    {
+      "index": 9,
+      "name": "n_walk_4",
+      "x": 64,
+      "y": 32,
+      "w": 16,
+      "h": 32,
+      "direction": "N",
+      "action": "walk"
+    },
+    {
+      "index": 10,
+      "name": "e_idle",
+      "x": 0,
+      "y": 64,
+      "w": 16,
+      "h": 32,
+      "direction": "E",
+      "action": "idle"
+    },
+    {
+      "index": 11,
+      "name": "e_walk_1",
+      "x": 16,
+      "y": 64,
+      "w": 16,
+      "h": 32,
+      "direction": "E",
+      "action": "walk"
+    },
+    {
+      "index": 12,
+      "name": "e_walk_2",
+      "x": 32,
+      "y": 64,
+      "w": 16,
+      "h": 32,
+      "direction": "E",
+      "action": "walk"
+    },
+    {
+      "index": 13,
+      "name": "e_walk_3",
+      "x": 48,
+      "y": 64,
+      "w": 16,
+      "h": 32,
+      "direction": "E",
+      "action": "walk"
+    },
+    {
+      "index": 14,
+      "name": "e_walk_4",
+      "x": 64,
+      "y": 64,
+      "w": 16,
+      "h": 32,
+      "direction": "E",
+      "action": "walk"
+    },
+    {
+      "index": 15,
+      "name": "w_idle",
+      "x": 0,
+      "y": 96,
+      "w": 16,
+      "h": 32,
+      "direction": "W",
+      "action": "idle"
+    },
+    {
+      "index": 16,
+      "name": "w_walk_1",
+      "x": 16,
+      "y": 96,
+      "w": 16,
+      "h": 32,
+      "direction": "W",
+      "action": "walk"
+    },
+    {
+      "index": 17,
+      "name": "w_walk_2",
+      "x": 32,
+      "y": 96,
+      "w": 16,
+      "h": 32,
+      "direction": "W",
+      "action": "walk"
+    },
+    {
+      "index": 18,
+      "name": "w_walk_3",
+      "x": 48,
+      "y": 96,
+      "w": 16,
+      "h": 32,
+      "direction": "W",
+      "action": "walk"
+    },
+    {
+      "index": 19,
+      "name": "w_walk_4",
+      "x": 64,
+      "y": 96,
+      "w": 16,
+      "h": 32,
+      "direction": "W",
+      "action": "walk"
+    }
+  ],
+  "animations": {
+    "idle_S": {
+      "frames": [
+        0
+      ],
+      "fps": 0,
+      "loop": false
+    },
+    "walk_S": {
+      "frames": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "fps": 8,
+      "loop": true
+    },
+    "idle_N": {
+      "frames": [
+        5
+      ],
+      "fps": 0,
+      "loop": false
+    },
+    "walk_N": {
+      "frames": [
+        6,
+        7,
+        8,
+        9
+      ],
+      "fps": 8,
+      "loop": true
+    },
+    "idle_E": {
+      "frames": [
+        10
+      ],
+      "fps": 0,
+      "loop": false
+    },
+    "walk_E": {
+      "frames": [
+        11,
+        12,
+        13,
+        14
+      ],
+      "fps": 8,
+      "loop": true
+    },
+    "idle_W": {
+      "frames": [
+        15
+      ],
+      "fps": 0,
+      "loop": false
+    },
+    "walk_W": {
+      "frames": [
+        16,
+        17,
+        18,
+        19
+      ],
+      "fps": 8,
+      "loop": true
+    }
+  }
+}

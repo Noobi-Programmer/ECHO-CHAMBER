@@ -13,6 +13,8 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls: string, parent?:
 }
 
 export interface ChoiceOption { id: string; label: string; hint?: string }
+export interface EvidenceItem { id: string; name: string; desc: string }
+export interface EvidenceData { recall: number; items: EvidenceItem[] }
 
 class UI {
   root!: HTMLElement;
@@ -32,6 +34,10 @@ class UI {
   private toastEl!: HTMLElement;
   private hintEl!: HTMLElement;
   private recallEl!: HTMLElement;
+  private helpBtn!: HTMLElement;
+  private shortcutsEl!: HTMLElement;
+  private inventoryEl!: HTMLElement;
+  private evidenceProvider?: () => EvidenceData;
   private modal = 0;
   private orphQueue: Promise<void> = Promise.resolve();
   private orphToken = 0;
@@ -59,9 +65,222 @@ class UI {
     this.toastEl = el('div', 'toast hidden', root);
     this.fadeEl = el('div', 'fade', root);
     this.fadeEl.style.opacity = '1';
+
+    // Top-right help button
+    this.helpBtn = el('button', 'help-btn', root, '?');
+    this.helpBtn.title = 'Keyboard Shortcuts (?)';
+    this.helpBtn.setAttribute('aria-label', 'Open Keyboard Shortcuts');
+    this.helpBtn.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      this.toggleShortcuts();
+    });
+
+    // Keyboard Shortcuts overlay modal
+    this.shortcutsEl = el('div', 'shortcuts-modal hidden', root, `
+      <div class="sc-backdrop"></div>
+      <div class="sc-card" role="dialog" aria-modal="true" aria-label="Keyboard Shortcuts">
+        <div class="sc-header">
+          <div class="sc-header-text">
+            <div class="sc-tag">PROTOCOL TERMINAL // CONTROLS</div>
+            <div class="sc-title">KEYBOARD SHORTCUTS</div>
+          </div>
+          <button class="sc-close" title="Close (Esc)">✕</button>
+        </div>
+        <div class="sc-body">
+          <table class="sc-table">
+            <thead>
+              <tr>
+                <th>KEY</th>
+                <th>ACTION</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="sc-key"><kbd>?</kbd> <span class="sc-dim">or</span> <kbd>Shift</kbd>+<kbd>/</kbd></td>
+                <td class="sc-action">Open / Close keyboard shortcuts</td>
+              </tr>
+              <tr>
+                <td class="sc-key"><kbd>Esc</kbd></td>
+                <td class="sc-action">Close window / Pause</td>
+              </tr>
+              <tr>
+                <td class="sc-key"><kbd>E</kbd> <span class="sc-dim">or</span> <kbd>Space</kbd></td>
+                <td class="sc-action">Interact / Continue dialogue</td>
+              </tr>
+              <tr>
+                <td class="sc-key"><kbd>Q</kbd> <span class="sc-dim">(hold)</span></td>
+                <td class="sc-action">Activate ECHO (Past-state view)</td>
+              </tr>
+              <tr>
+                <td class="sc-key"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> <span class="sc-dim">/</span> <kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd></td>
+                <td class="sc-action">Movement</td>
+              </tr>
+              <tr>
+                <td class="sc-key"><kbd>Shift</kbd> <span class="sc-dim">(hold)</span></td>
+                <td class="sc-action">Run</td>
+              </tr>
+              <tr>
+                <td class="sc-key"><kbd>Tab</kbd></td>
+                <td class="sc-action">Inventory / Evidence</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="sc-footer">
+          <div class="sc-tip"><span class="sc-amber">TIP:</span> Compare differences between present & ECHO past to solve station puzzles.</div>
+          <div class="sc-credit"><span class="sc-cyan">ECHO//CHAMBER</span> · Iteration 017 · <kbd>Esc</kbd> to return</div>
+        </div>
+      </div>`);
+
+    this.shortcutsEl.querySelector('.sc-close')!.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      this.closeShortcuts();
+    });
+    this.shortcutsEl.querySelector('.sc-backdrop')!.addEventListener('click', () => {
+      this.closeShortcuts();
+    });
+
+    // Evidence / Inventory overlay modal (Tab)
+    this.inventoryEl = el('div', 'inventory-modal hidden', root, `
+      <div class="sc-backdrop"></div>
+      <div class="sc-card inv-card" role="dialog" aria-modal="true" aria-label="Evidence and Inventory">
+        <div class="sc-header">
+          <div class="sc-header-text">
+            <div class="sc-tag">RESONANCE ARCHIVE // DOSSIER</div>
+            <div class="sc-title">INVENTORY & EVIDENCE</div>
+          </div>
+          <button class="sc-close inv-close" title="Close (Tab / Esc)">✕</button>
+        </div>
+        <div class="inv-recall-banner">
+          <span class="inv-label">CONSCIOUSNESS RECALL:</span>
+          <span class="inv-recall-num">3%</span>
+          <div class="inv-bar"><div class="inv-bar-fill"></div></div>
+        </div>
+        <div class="inv-body">
+          <div class="inv-items"></div>
+        </div>
+        <div class="sc-footer">
+          <div class="sc-tip"><span class="sc-amber">EVIDENCE:</span> Objective station records survive memory rewrites.</div>
+          <div class="sc-credit"><kbd>Tab</kbd> / <kbd>Esc</kbd> to return</div>
+        </div>
+      </div>`);
+
+    this.inventoryEl.querySelector('.inv-close')!.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      this.closeInventory();
+    });
+    this.inventoryEl.querySelector('.sc-backdrop')!.addEventListener('click', () => {
+      this.closeInventory();
+    });
+
+    // Global keyboard listener for ? and Tab
+    window.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.toggleShortcuts();
+        return;
+      }
+      if (e.key === 'Escape') {
+        if (this.isShortcutsOpen()) {
+          e.preventDefault();
+          e.stopPropagation();
+          this.closeShortcuts();
+          return;
+        }
+        if (this.isInventoryOpen()) {
+          e.preventDefault();
+          e.stopPropagation();
+          this.closeInventory();
+          return;
+        }
+      }
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        e.stopPropagation();
+        this.toggleInventory();
+        return;
+      }
+    }, true);
   }
 
   isModal() { return this.modal > 0; }
+
+  // ------------------------------------------------------------- shortcuts & inventory
+  isShortcutsOpen(): boolean {
+    return Boolean(this.shortcutsEl && !this.shortcutsEl.classList.contains('hidden'));
+  }
+
+  openShortcuts() {
+    if (this.isShortcutsOpen()) return;
+    if (this.isInventoryOpen()) this.closeInventory(false);
+    audio.blip();
+    this.shortcutsEl.classList.remove('hidden');
+    this.modal++;
+  }
+
+  closeShortcuts(sound = true) {
+    if (!this.isShortcutsOpen()) return;
+    if (sound) audio.blip();
+    this.shortcutsEl.classList.add('hidden');
+    this.modal = Math.max(0, this.modal - 1);
+  }
+
+  toggleShortcuts() {
+    if (this.isShortcutsOpen()) {
+      this.closeShortcuts();
+    } else {
+      this.openShortcuts();
+    }
+  }
+
+  setEvidenceProvider(fn: () => EvidenceData) {
+    this.evidenceProvider = fn;
+  }
+
+  isInventoryOpen(): boolean {
+    return Boolean(this.inventoryEl && !this.inventoryEl.classList.contains('hidden'));
+  }
+
+  openInventory() {
+    if (this.isInventoryOpen()) return;
+    if (this.isShortcutsOpen()) this.closeShortcuts(false);
+    const data = this.evidenceProvider ? this.evidenceProvider() : { recall: 3, items: [] };
+    const numEl = this.inventoryEl.querySelector('.inv-recall-num') as HTMLElement;
+    const barEl = this.inventoryEl.querySelector('.inv-bar-fill') as HTMLElement;
+    const itemsEl = this.inventoryEl.querySelector('.inv-items') as HTMLElement;
+    if (numEl) numEl.textContent = `${data.recall}%`;
+    if (barEl) barEl.style.width = `${Math.min(100, Math.max(3, data.recall))}%`;
+    if (itemsEl) {
+      itemsEl.innerHTML = '';
+      if (data.items.length === 0) {
+        itemsEl.innerHTML = `<div class="inv-empty">No active evidence catalogued in current cycle.<br><small>Investigate the station and toggle ECHO <kbd>Q</kbd> to recover memory traces.</small></div>`;
+      } else {
+        for (const item of data.items) {
+          const row = el('div', 'inv-row', itemsEl);
+          row.innerHTML = `<div class="inv-item-name"><span class="inv-bullet">◈</span> ${item.name}</div><div class="inv-item-desc">${item.desc}</div>`;
+        }
+      }
+    }
+    audio.blip();
+    this.inventoryEl.classList.remove('hidden');
+    this.modal++;
+  }
+
+  closeInventory(sound = true) {
+    if (!this.isInventoryOpen()) return;
+    if (sound) audio.blip();
+    this.inventoryEl.classList.add('hidden');
+    this.modal = Math.max(0, this.modal - 1);
+  }
+
+  toggleInventory() {
+    if (this.isInventoryOpen()) {
+      this.closeInventory();
+    } else {
+      this.openInventory();
+    }
+  }
 
   // ------------------------------------------------------------- title
   title(onStart: () => void) {
@@ -72,8 +291,11 @@ class UI {
         <button class="title-start">Wake up <kbd>Enter</kbd></button>
         <div class="title-controls">
           <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / arrows — move</div>
+          <div><kbd>Shift</kbd> — run</div>
           <div><kbd>E</kbd> — inspect / continue</div>
           <div><kbd>Q</kbd> (hold) — ECHO: see what this place remembers</div>
+          <div><kbd>Tab</kbd> — inventory / evidence</div>
+          <div><kbd>?</kbd> — keyboard shortcuts</div>
           <div><kbd>M</kbd> — mute</div>
         </div>
         <div class="title-note">Headphones recommended · about 6–8 minutes</div>
