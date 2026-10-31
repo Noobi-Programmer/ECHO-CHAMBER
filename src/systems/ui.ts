@@ -601,4 +601,5 @@ class UI {
 }
 
 export const ui = new UI();
+(window as unknown as { __UI: UI }).__UI = ui;
 export { wait };

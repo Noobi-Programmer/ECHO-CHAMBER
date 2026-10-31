@@ -1,6 +1,7 @@
 // Reusable Cinematic Object Inspection Interface for ECHO//CHAMBER
 import { audio } from '../audio';
 import type { InspectConfig, InspectStateContent } from './types';
+import { getIllustration } from '../illustrations';
 
 const ADV_KEYS = new Set(['e', 'E', ' ', 'Enter']);
 
@@ -83,22 +84,28 @@ export class InspectionModal {
     const body = el('div', 'inspect-body', card);
 
     // Viewport / Illustration Frame
-    const viewport = el('div', `inspect-viewport ${this.isMagnified ? 'magnified' : ''} ${this.isEcho ? 'echo-tint' : ''}`, body);
+    const illus = getIllustration(config.id);
+    const echoTintClass = (!illus && this.isEcho) ? 'echo-tint' : '';
+    const viewport = el('div', `inspect-viewport ${this.isMagnified ? 'magnified' : ''} ${echoTintClass}`, body);
     
     // Scanline & raster overlay
     el('div', 'inspect-viewport-overlay', viewport);
 
     // Visual Content or Clean Placeholder Slot
     this.renderVisualContent(viewport, state, config);
-
-    // Viewport Controls (Magnify / Zoom)
+    // Viewport Controls (Magnify / Zoom / Macro Detail)
     if (config.canMagnify !== false) {
-      const magBtn = el('button', 'inspect-mag-btn', viewport, this.isMagnified ? '[-] 1× VIEW' : '[+] 2× MAGNIFY');
+      const magLabel = illus?.detail ? (this.isMagnified ? '[-] 1× OVERVIEW' : '[+] MACRO DETAIL') : (this.isMagnified ? '[-] 1× VIEW' : '[+] 2× MAGNIFY');
+      const magBtn = el('button', 'inspect-mag-btn', viewport, magLabel);
       magBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         this.isMagnified = !this.isMagnified;
         viewport.classList.toggle('magnified', this.isMagnified);
-        magBtn.textContent = this.isMagnified ? '[-] 1× VIEW' : '[+] 2× MAGNIFY';
+        magBtn.textContent = illus?.detail ? (this.isMagnified ? '[-] 1× OVERVIEW' : '[+] MACRO DETAIL') : (this.isMagnified ? '[-] 1× VIEW' : '[+] 2× MAGNIFY');
+        if (illus?.detail) {
+          const img = viewport.querySelector('.inspect-illus-img.present') as HTMLImageElement;
+          if (img) img.src = this.isMagnified ? illus.detail : illus.present;
+        }
         audio.blip();
       });
     }
@@ -165,6 +172,28 @@ export class InspectionModal {
 
   private renderVisualContent(viewport: HTMLElement, state: InspectStateContent, config: InspectConfig) {
     const stage = el('div', 'inspect-visual-stage', viewport);
+
+    const illus = getIllustration(config.id);
+    if (illus) {
+      const container = el('div', 'inspect-illustration-container', stage);
+
+      const presentSrc = (this.isMagnified && illus.detail) ? illus.detail : illus.present;
+      const imgPresent = el('img', `inspect-illus-img present ${!this.isEcho ? 'active' : ''}`, container) as HTMLImageElement;
+      imgPresent.src = presentSrc;
+      imgPresent.alt = config.title;
+
+      if (illus.echo) {
+        const imgEcho = el('img', `inspect-illus-img echo ${this.isEcho ? 'active' : ''}`, container) as HTMLImageElement;
+        imgEcho.src = illus.echo;
+        imgEcho.alt = `${config.title} (ECHO)`;
+      }
+
+      if (illus.overlayText) {
+        const overlay = el('div', 'inspect-wall-text', container);
+        overlay.textContent = illus.overlayText;
+      }
+      return;
+    }
 
     if (state.textureKey) {
       // If a texture key is provided and rendered onto canvas or existing preview

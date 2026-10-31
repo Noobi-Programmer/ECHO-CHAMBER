@@ -1116,8 +1116,30 @@ export class StationScene extends Phaser.Scene {
         break;
       case 'wellConsole':
         if (this.step === 'final') await this.finalConsole();
-        else if (!this.has('continuity')) await this.continuityPuzzle();
-        else await ui.say('The console waits. ' + (this.has('logRead') ? '' : 'The restoration log is available on the terminal.'));
+        else if (!this.has('continuity')) {
+          await ui.inspect({
+            id: 'wellConsole',
+            title: 'THE WELL // ARCHIVE CONSOLE',
+            category: 'EQUIPMENT',
+            source: 'ASPHODEL CORE · ARCHIVE CONSOLE',
+            present: {
+              description: [T.wellConsole],
+              badge: 'RESTORE CONTINUITY // ARCHIVE INTERFACE',
+            },
+          });
+          await this.continuityPuzzle();
+        } else {
+          await ui.inspect({
+            id: 'wellConsole',
+            title: 'THE WELL // ARCHIVE CONSOLE',
+            category: 'EQUIPMENT',
+            source: 'ASPHODEL CORE · ARCHIVE CONSOLE',
+            present: {
+              description: ['The console waits. ' + (this.has('logRead') ? '' : 'The restoration log is available on the terminal.')],
+              badge: 'RESTORE CONTINUITY // COMPLETE',
+            },
+          });
+        }
         break;
       case 'logTerm':
         if (!this.has('continuity')) { await ui.say(T.logTermLocked); break; }
@@ -1280,7 +1302,6 @@ export class StationScene extends Phaser.Scene {
   }
 
   private async continuityPuzzle() {
-    await ui.say(T.wellConsole);
     const c = await ui.choose('RESTORE CONTINUITY — place the fragments in the order they happened.', [{ id: 'go', label: 'Begin' }, { id: 'x', label: 'Not yet' }]);
     if (c === 'x') return;
     const order: string[] = [];
