@@ -1,0 +1,1202 @@
+{
+ "meta": {
+  "canonVersion": "0.2-proposal",
+  "status": "PROPOSAL — not approved",
+  "owner": "STORY-001",
+  "note": "Narrative state contract only. Engineering decides runtime representation."
+ },
+ "chapters": [
+  {
+   "id": "CH0_OPEN",
+   "room": "ROOM_CRADLE_BAY",
+   "enter": "EV_GAME_START",
+   "exit": "EV_CONTROL_GIVEN"
+  },
+  {
+   "id": "CH1_CRADLE",
+   "room": "ROOM_CRADLE_BAY",
+   "enter": "EV_CONTROL_GIVEN",
+   "exit": "EV_LAB_ENTER"
+  },
+  {
+   "id": "CH2_LAB",
+   "room": "ROOM_LAB",
+   "enter": "EV_LAB_ENTER",
+   "exit": "EV_CORE_ENTER"
+  },
+  {
+   "id": "CH3_WELL",
+   "room": "ROOM_CORE",
+   "enter": "EV_CORE_ENTER",
+   "exit": "EV_REFLECTION_DONE"
+  },
+  {
+   "id": "CH4_NAME",
+   "room": "ROOM_CORE",
+   "enter": "EV_REFLECTION_DONE",
+   "exit": "EV_ENDING_START"
+  }
+ ],
+ "rooms": [
+  "ROOM_CRADLE_BAY",
+  "ROOM_LAB",
+  "ROOM_CORE"
+ ],
+ "flags": {
+  "FLAG_ECHO_TAUGHT": "Player held ECHO near the mug",
+  "FLAG_SEEN_ECHO_LOCKER_016": "Saw the card-hiding echo",
+  "FLAG_HAS_LAB_CARD": "ITEM_LAB_CARD in inventory",
+  "FLAG_LAB_UNLOCKED": "Lab door opened",
+  "FLAG_SEEN_STORM_RITUAL": "Saw storm ritual echo",
+  "FLAG_STORM_MARKED": "OPTIONAL: player marked the storm (secret ending key)",
+  "FLAG_SEEN_CONTESTED": "Saw contested argument",
+  "FLAG_CLUE_SNAPPED_KEY": "Inspected key slot",
+  "FLAG_ARGUMENT_CORROBORATED": "P2a solved",
+  "FLAG_REC03_PLAYED": "Heard Mira's message",
+  "FLAG_CODE_ENTERED": "P2b solved",
+  "FLAG_NAMEQ_ACTIVE": "ORPHEUS name loop running",
+  "FLAG_HEARD_REC04": "Heard Voss's directive",
+  "FLAG_CONTINUITY_COMPLETE": "P3 solved",
+  "FLAG_LOG_READ": "Iteration log closed",
+  "FLAG_LETHE_UNLOCKED": "Shutter open",
+  "FLAG_SPEAK_ENABLED": "Final console answerable",
+  "FLAG_READ_NOTE06": "OPTIONAL: read Mira's jacket note"
+ },
+ "variables": {
+  "recall": {
+   "type": "int",
+   "initial": 3,
+   "display": "SYS_RECALL_n"
+  },
+  "playerName": {
+   "type": "string",
+   "initial": "",
+   "maxLength": 12,
+   "default": "Seventeen"
+  },
+  "ch1PathSamples": {
+   "type": "array",
+   "note": "x,y,facing every 250ms in CH1 for ECHO_SELF_R017; optional"
+  }
+ },
+ "recallSteps": [
+  {
+   "on": "EV_GAME_START",
+   "set": 3
+  },
+  {
+   "on": "EV_ECHO_FIRST_USE",
+   "set": 9
+  },
+  {
+   "on": "EV_CARD_TAKEN",
+   "set": 14
+  },
+  {
+   "on": "EV_LAB_ENTER",
+   "set": 22
+  },
+  {
+   "on": "EV_STORM_SEEN",
+   "set": 31
+  },
+  {
+   "on": "EV_CONTESTED_SEEN",
+   "set": 38
+  },
+  {
+   "on": "EV_CORROBORATE_SUCCESS",
+   "set": 63
+  },
+  {
+   "on": "EV_CODE_CORRECT",
+   "set": 70
+  },
+  {
+   "on": "EV_CONTINUITY_COMPLETE",
+   "set": 94
+  },
+  {
+   "on": "EV_ENDING_START:END_HER_NAME",
+   "set": 100
+  }
+ ],
+ "objects": [
+  {
+   "id": "OBJ_CRADLE",
+   "room": "ROOM_CRADLE_BAY",
+   "prompt": "Inspect",
+   "text": [
+    "INS_CRADLE_01",
+    "INS_CRADLE_PANEL"
+   ]
+  },
+  {
+   "id": "OBJ_VOSS_POD",
+   "room": "ROOM_CRADLE_BAY",
+   "prompt": "Inspect",
+   "text": [
+    "INS_VOSS_POD_01",
+    "INS_VOSS_POD_02"
+   ]
+  },
+  {
+   "id": "OBJ_MUG",
+   "room": "ROOM_CRADLE_BAY",
+   "prompt": "Inspect",
+   "text": [
+    "INS_MUG_01"
+   ],
+   "echo": "ECHO_MUG"
+  },
+  {
+   "id": "OBJ_CRADLE_TERMINAL",
+   "room": "ROOM_CRADLE_BAY",
+   "prompt": "Use",
+   "text": [
+    "INS_TERMINAL_RECALL"
+   ],
+   "qa": [
+    "QA_C1_HAPPENED",
+    "QA_C1_POD",
+    "QA_C1_WHO_AM_I",
+    "QA_C1_WHERE_SEN"
+   ]
+  },
+  {
+   "id": "OBJ_LOCKER_SEN",
+   "room": "ROOM_CRADLE_BAY",
+   "prompt": "Inspect",
+   "text": [
+    "INS_LOCKER_01",
+    "INS_LOCKER_02",
+    "INS_LOCKER_03"
+   ],
+   "emits": "EV_LOCKER_OPENED",
+   "echo": "ECHO_LOCKER_016"
+  },
+  {
+   "id": "OBJ_LOCKER_JACKET",
+   "room": "ROOM_CRADLE_BAY",
+   "optional": true,
+   "requires": {
+    "event": "EV_LOCKER_OPENED"
+   },
+   "text": [
+    "INS_LOCKER_JACKET"
+   ],
+   "gives": "NOTE_06"
+  },
+  {
+   "id": "OBJ_FLOOR_PLATE_1",
+   "room": "ROOM_CRADLE_BAY",
+   "prompt": "Inspect",
+   "text": [
+    "INS_PLATE_GENERIC",
+    "INS_PLATE_EMPTY"
+   ]
+  },
+  {
+   "id": "OBJ_FLOOR_PLATE_2",
+   "room": "ROOM_CRADLE_BAY",
+   "prompt": "Inspect",
+   "text": [
+    "INS_PLATE_GENERIC",
+    "INS_PLATE_EMPTY"
+   ]
+  },
+  {
+   "id": "OBJ_FLOOR_PLATE_3",
+   "room": "ROOM_CRADLE_BAY",
+   "prompt": "Inspect",
+   "liftRequires": {
+    "flag": "FLAG_SEEN_ECHO_LOCKER_016"
+   },
+   "text": [
+    "INS_PLATE_GENERIC",
+    "INS_PLATE_3"
+   ],
+   "gives": "ITEM_LAB_CARD",
+   "emits": "EV_CARD_TAKEN"
+  },
+  {
+   "id": "OBJ_FLOOR_PLATE_4",
+   "room": "ROOM_CRADLE_BAY",
+   "prompt": "Inspect",
+   "text": [
+    "INS_PLATE_GENERIC",
+    "INS_PLATE_EMPTY"
+   ]
+  },
+  {
+   "id": "OBJ_FLOOR_PLATE_5",
+   "room": "ROOM_CRADLE_BAY",
+   "prompt": "Inspect",
+   "text": [
+    "INS_PLATE_GENERIC",
+    "INS_PLATE_EMPTY"
+   ]
+  },
+  {
+   "id": "OBJ_LAB_DOOR",
+   "room": "ROOM_CRADLE_BAY",
+   "prompt": "Use",
+   "requiresItem": "ITEM_LAB_CARD",
+   "text": [
+    "INS_LAB_DOOR"
+   ],
+   "emits": "EV_LAB_ENTER"
+  },
+  {
+   "id": "OBJ_CREW_PHOTO",
+   "room": "ROOM_CRADLE_BAY",
+   "optional": true,
+   "text": [
+    "INS_CREW_PHOTO"
+   ]
+  },
+  {
+   "id": "OBJ_WINDOW",
+   "room": "ROOM_LAB",
+   "prompt": "Inspect",
+   "text": [
+    "INS_WINDOW_01",
+    "INS_WINDOW_02"
+   ],
+   "echo": "ECHO_STORM_RITUAL"
+  },
+  {
+   "id": "OBJ_PENCIL",
+   "room": "ROOM_LAB",
+   "optional": true,
+   "requires": {
+    "flag": "FLAG_SEEN_STORM_RITUAL"
+   },
+   "prompt": "Mark the storm",
+   "action": "ACT_MARK_STORM",
+   "sets": "FLAG_STORM_MARKED"
+  },
+  {
+   "id": "OBJ_WALL_RULE",
+   "room": "ROOM_LAB",
+   "prompt": "Inspect",
+   "text": [
+    "INS_WALL_RULE"
+   ]
+  },
+  {
+   "id": "OBJ_LAB_CONSOLE",
+   "room": "ROOM_LAB",
+   "prompt": "Inspect",
+   "text": [
+    "INS_CONSOLE"
+   ],
+   "echo": "ECHO_ARGUMENT_CONTESTED"
+  },
+  {
+   "id": "OBJ_KEY_SLOT",
+   "room": "ROOM_LAB",
+   "prompt": "Inspect",
+   "text": [
+    "INS_KEY_SLOT"
+   ],
+   "clue": "CL_SNAPPED_KEY",
+   "sets": "FLAG_CLUE_SNAPPED_KEY"
+  },
+  {
+   "id": "OBJ_PHOTO",
+   "room": "ROOM_LAB",
+   "optional": true,
+   "prompt": "Inspect",
+   "text": [
+    "INS_PHOTO_01",
+    "INS_PHOTO_02",
+    "INS_PHOTO_03"
+   ],
+   "echo": "ECHO_PHOTO"
+  },
+  {
+   "id": "OBJ_RECORDER_SEALED",
+   "room": "ROOM_LAB",
+   "prompt": "Listen",
+   "requires": {
+    "flag": "FLAG_ARGUMENT_CORROBORATED"
+   },
+   "lockedText": "INS_RECORDER_SEALED",
+   "recording": "REC_03"
+  },
+  {
+   "id": "OBJ_VOSS_DESK",
+   "room": "ROOM_LAB",
+   "optional": true,
+   "prompt": "Listen",
+   "text": [
+    "INS_VOSS_DESK"
+   ],
+   "recording": "REC_01"
+  },
+  {
+   "id": "OBJ_LAB_TERMINAL",
+   "room": "ROOM_LAB",
+   "optional": true,
+   "prompt": "Use",
+   "recording": "REC_02"
+  },
+  {
+   "id": "OBJ_WHITEBOARD",
+   "room": "ROOM_LAB",
+   "optional": true,
+   "text": [
+    "INS_WHITEBOARD"
+   ]
+  },
+  {
+   "id": "OBJ_CORE_DOOR",
+   "room": "ROOM_LAB",
+   "prompt": "Inspect",
+   "echoAfter": "EV_CODE_CORRECT",
+   "echo": "ECHO_FROST_016"
+  },
+  {
+   "id": "OBJ_CORE_KEYPAD",
+   "room": "ROOM_LAB",
+   "prompt": "Use",
+   "puzzle": "PZ_P2B",
+   "echo": "ECHO_CODE_MEMORY"
+  },
+  {
+   "id": "OBJ_PILLAR_F1",
+   "room": "ROOM_CORE",
+   "echo": "ECHO_F1_STORM",
+   "gives": "ITEM_SHARD_F1"
+  },
+  {
+   "id": "OBJ_PILLAR_F2",
+   "room": "ROOM_CORE",
+   "echo": "ECHO_F2_SNAP",
+   "gives": "ITEM_SHARD_F2"
+  },
+  {
+   "id": "OBJ_PILLAR_F3",
+   "room": "ROOM_CORE",
+   "echo": "ECHO_F3_WAKEME",
+   "gives": "ITEM_SHARD_F3"
+  },
+  {
+   "id": "OBJ_PILLAR_F4",
+   "room": "ROOM_CORE",
+   "echo": "ECHO_F4_LOOKBACK",
+   "gives": "ITEM_SHARD_F4"
+  },
+  {
+   "id": "OBJ_RAIL_SOCKET_1",
+   "room": "ROOM_CORE",
+   "puzzle": "PZ_P3"
+  },
+  {
+   "id": "OBJ_RAIL_SOCKET_2",
+   "room": "ROOM_CORE",
+   "puzzle": "PZ_P3"
+  },
+  {
+   "id": "OBJ_RAIL_SOCKET_3",
+   "room": "ROOM_CORE",
+   "puzzle": "PZ_P3"
+  },
+  {
+   "id": "OBJ_RAIL_SOCKET_4",
+   "room": "ROOM_CORE",
+   "puzzle": "PZ_P3"
+  },
+  {
+   "id": "OBJ_RAIL_SOCKET_5",
+   "room": "ROOM_CORE",
+   "note": "Not interactable; ignites on EV_CONTINUITY_COMPLETE"
+  },
+  {
+   "id": "OBJ_REC04_PLAYER",
+   "room": "ROOM_CORE",
+   "prompt": "Listen",
+   "recording": "REC_04",
+   "sets": "FLAG_HEARD_REC04"
+  },
+  {
+   "id": "OBJ_RESTORATION_TERMINAL",
+   "room": "ROOM_CORE",
+   "prompt": "Use",
+   "requires": {
+    "flag": "FLAG_CONTINUITY_COMPLETE"
+   },
+   "lockedText": "INS_RESTORATION_TERM",
+   "shows": "LOG_ITERATIONS",
+   "emits": "EV_LOG_CLOSED"
+  },
+  {
+   "id": "OBJ_LETHE_SHUTTER",
+   "room": "ROOM_CORE",
+   "prompt": "Inspect",
+   "text": [
+    "INS_LETHE_SHUTTER"
+   ]
+  },
+  {
+   "id": "OBJ_LETHE_LEVER",
+   "room": "ROOM_CORE",
+   "prompt": "Hold [E] — pull Lethe",
+   "requires": {
+    "flag": "FLAG_LETHE_UNLOCKED"
+   },
+   "holdSeconds": 2,
+   "emits": "EV_LETHE_PULLED"
+  },
+  {
+   "id": "OBJ_WELL_CONSOLE",
+   "room": "ROOM_CORE",
+   "prompt": "Speak",
+   "requires": {
+    "flag": "FLAG_SPEAK_ENABLED"
+   },
+   "qa": [
+    "QA_F_WHAT",
+    "QA_F_OTHERS",
+    "QA_F_HERNAME",
+    "QA_F_ELSE",
+    "QA_F_LETHE",
+    "QA_F_WANT"
+   ],
+   "finalChoice": true
+  }
+ ],
+ "items": [
+  "ITEM_LAB_CARD",
+  "ITEM_SHARD_F1",
+  "ITEM_SHARD_F2",
+  "ITEM_SHARD_F3",
+  "ITEM_SHARD_F4",
+  "NOTE_06"
+ ],
+ "echoes": [
+  {
+   "id": "ECHO_OPENING_016",
+   "room": "ROOM_CRADLE_BAY",
+   "source": "UNREGISTERED",
+   "mode": "scripted"
+  },
+  {
+   "id": "ECHO_MUG",
+   "room": "ROOM_CRADLE_BAY",
+   "source": "M.SEN",
+   "emitsFirst": "EV_ECHO_FIRST_USE",
+   "sets": "FLAG_ECHO_TAUGHT"
+  },
+  {
+   "id": "ECHO_LOCKER_016",
+   "room": "ROOM_CRADLE_BAY",
+   "source": "UNREGISTERED",
+   "requires": {
+    "event": "EV_LOCKER_OPENED"
+   },
+   "sets": "FLAG_SEEN_ECHO_LOCKER_016",
+   "emits": "EV_ECHO_LOCKER_SEEN"
+  },
+  {
+   "id": "ECHO_TALLY",
+   "room": "ROOM_CRADLE_BAY",
+   "source": "UNREGISTERED_MULTI",
+   "optional": true
+  },
+  {
+   "id": "ECHO_STORM_RITUAL",
+   "room": "ROOM_LAB",
+   "source": "M.SEN",
+   "sets": "FLAG_SEEN_STORM_RITUAL",
+   "emits": "EV_STORM_SEEN"
+  },
+  {
+   "id": "ECHO_STORM_ITERS",
+   "room": "ROOM_LAB",
+   "source": "UNREGISTERED_MULTI",
+   "layerWith": "ECHO_STORM_RITUAL"
+  },
+  {
+   "id": "ECHO_PHOTO",
+   "room": "ROOM_LAB",
+   "source": "M.SEN",
+   "optional": true
+  },
+  {
+   "id": "ECHO_ARGUMENT_CONTESTED",
+   "room": "ROOM_LAB",
+   "source": [
+    "M.SEN",
+    "E.VOSS"
+   ],
+   "state": [
+    "CONTESTED",
+    "RESOLVED_M"
+   ],
+   "sets": "FLAG_SEEN_CONTESTED",
+   "emits": "EV_CONTESTED_SEEN"
+  },
+  {
+   "id": "ECHO_CODE_MEMORY",
+   "room": "ROOM_LAB",
+   "source": "M.SEN",
+   "state": [
+    "SEALED",
+    "UNSEALED"
+   ],
+   "requires": {
+    "flag": "FLAG_ARGUMENT_CORROBORATED"
+   }
+  },
+  {
+   "id": "ECHO_FROST_016",
+   "room": "ROOM_LAB",
+   "source": "UNREGISTERED",
+   "mode": "involuntary",
+   "trigger": "EV_CODE_CORRECT"
+  },
+  {
+   "id": "ECHO_F1_STORM",
+   "room": "ROOM_CORE",
+   "source": "M.SEN"
+  },
+  {
+   "id": "ECHO_F2_SNAP",
+   "room": "ROOM_CORE",
+   "source": "M.SEN"
+  },
+  {
+   "id": "ECHO_F3_WAKEME",
+   "room": "ROOM_CORE",
+   "source": "E.VOSS"
+  },
+  {
+   "id": "ECHO_F4_LOOKBACK",
+   "room": "ROOM_CORE",
+   "source": "R-016"
+  },
+  {
+   "id": "ECHO_SELF_R017",
+   "room": "ROOM_CORE",
+   "source": "R-017",
+   "mode": "scripted",
+   "data": "ch1PathSamples",
+   "fallback": "authored"
+  },
+  {
+   "id": "ECHO_SIXTEEN",
+   "room": "ROOM_CRADLE_BAY",
+   "source": "R-001..R-016",
+   "endingOnly": "END_HER_NAME"
+  },
+  {
+   "id": "ECHO_CASCADE",
+   "room": "ALL",
+   "source": "ALL",
+   "endingOnly": "END_LETHE"
+  }
+ ],
+ "clues": {
+  "CL_OPENING_MEMORY": "ECHO_OPENING_016",
+  "CL_MUG_GLUED": "OBJ_MUG",
+  "CL_LOCKER_PALM": "OBJ_LOCKER_SEN",
+  "CL_ECHO_UNREG_FIGURE": "ECHO_LOCKER_016",
+  "CL_TALLY_LID": "ECHO_TALLY",
+  "CL_VOSS_POD": "OBJ_VOSS_POD",
+  "CL_RECALL_PCT": "OBJ_CRADLE_TERMINAL",
+  "CL_STORM_RITUAL": "ECHO_STORM_RITUAL",
+  "CL_STORM_ITER_DOTS": "ECHO_STORM_ITERS",
+  "CL_PHOTO_SCRATCHED": "OBJ_PHOTO",
+  "CL_WALL_RULE": "OBJ_WALL_RULE",
+  "CL_CONTESTED_ARGUMENT": "ECHO_ARGUMENT_CONTESTED",
+  "CL_SNAPPED_KEY": "OBJ_KEY_SLOT",
+  "CL_REC02_CONSENT": "REC_02",
+  "CL_REC03_TO_WHOEVER": "REC_03",
+  "CL_CORE_CODE_MEMORY": "ECHO_CODE_MEMORY",
+  "CL_DONT_ANSWER": "ECHO_FROST_016",
+  "CL_REC04_WAKE_ME": "REC_04",
+  "CL_TIMELINE_R017": "ECHO_SELF_R017",
+  "CL_ITER_LOG": "LOG_ITERATIONS",
+  "CL_WREN_LOG": "LOG_ITERATIONS",
+  "CL_REFLECTION": "PORTRAIT_REFLECTION",
+  "CL_REC06_NAMES": "NOTE_06"
+ },
+ "evidenceForCorroboration": {
+  "ECHO_ARGUMENT_CONTESTED": {
+   "correctMemory": "M.SEN",
+   "correctEvidence": "CL_SNAPPED_KEY",
+   "selectableEvidence": [
+    "CL_SNAPPED_KEY",
+    "CL_WALL_RULE",
+    "CL_MUG_GLUED",
+    "CL_PHOTO_SCRATCHED",
+    "CL_STORM_RITUAL"
+   ]
+  }
+ },
+ "recordings": [
+  {
+   "id": "REC_01",
+   "speaker": "VOSS",
+   "md": 1103,
+   "room": "ROOM_LAB",
+   "optional": true
+  },
+  {
+   "id": "REC_02",
+   "speaker": "MIRA",
+   "md": 1180,
+   "room": "ROOM_LAB",
+   "optional": true
+  },
+  {
+   "id": "REC_03",
+   "speaker": "MIRA",
+   "md": 1253,
+   "room": "ROOM_LAB",
+   "critical": true,
+   "sets": "FLAG_REC03_PLAYED"
+  },
+  {
+   "id": "REC_04",
+   "speaker": "VOSS",
+   "md": 1262,
+   "room": "ROOM_CORE",
+   "critical": true
+  },
+  {
+   "id": "REC_05",
+   "speaker": "MIRA",
+   "md": 1253,
+   "endingOnly": [
+    "END_LETHE"
+   ]
+  },
+  {
+   "id": "NOTE_06",
+   "speaker": "MIRA",
+   "md": 1256,
+   "room": "ROOM_CRADLE_BAY",
+   "optional": true,
+   "sets": "FLAG_READ_NOTE06"
+  }
+ ],
+ "puzzles": {
+  "PZ_P0": {
+   "states": [
+    "INACTIVE",
+    "ACTIVE",
+    "SOLVED"
+   ],
+   "solvedWhen": {
+    "flag": "FLAG_ECHO_TAUGHT"
+   }
+  },
+  "PZ_P1": {
+   "states": [
+    "INACTIVE",
+    "ACTIVE",
+    "SOLVED"
+   ],
+   "activeWhen": {
+    "event": "EV_LOCKER_OPENED"
+   },
+   "solvedWhen": {
+    "flag": "FLAG_HAS_LAB_CARD"
+   },
+   "hints": {
+    "H1": {
+     "after_s": 45,
+     "text": "HINT_P1_1"
+    },
+    "H2": {
+     "after_s": 90,
+     "text": "HINT_P1_2"
+    },
+    "H3": {
+     "after_s": 150,
+     "text": "HINT_P1_3"
+    }
+   }
+  },
+  "PZ_P2A": {
+   "states": [
+    "INACTIVE",
+    "ACTIVE",
+    "SOLVED"
+   ],
+   "activeWhen": {
+    "flag": "FLAG_SEEN_CONTESTED"
+   },
+   "solvedWhen": {
+    "flag": "FLAG_ARGUMENT_CORROBORATED"
+   },
+   "hints": {
+    "H1": {
+     "after_s": 45,
+     "orFails": 0,
+     "text": "HINT_P2A_1"
+    },
+    "H2": {
+     "after_s": 90,
+     "orFails": 2,
+     "text": "HINT_P2A_2"
+    },
+    "H3": {
+     "after_s": 150,
+     "orFails": 4,
+     "text": "HINT_P2A_3"
+    }
+   }
+  },
+  "PZ_P2B": {
+   "states": [
+    "SEALED",
+    "ACTIVE",
+    "SOLVED"
+   ],
+   "activeWhen": {
+    "flag": "FLAG_ARGUMENT_CORROBORATED"
+   },
+   "solution": [
+    "CIRCLE",
+    "TRIANGLE",
+    "DIAMOND"
+   ],
+   "buttons": [
+    "CIRCLE",
+    "TRIANGLE",
+    "SQUARE",
+    "DIAMOND"
+   ],
+   "solvedWhen": {
+    "flag": "FLAG_CODE_ENTERED"
+   },
+   "hints": {
+    "H1": {
+     "after_s": 45,
+     "text": "HINT_P2B_1"
+    },
+    "H2": {
+     "after_s": 90,
+     "orFails": 2,
+     "text": "HINT_P2B_2"
+    },
+    "H3": {
+     "after_s": 150,
+     "orFails": 4,
+     "text": "HINT_P2B_3"
+    }
+   }
+  },
+  "PZ_P3": {
+   "states": [
+    "INACTIVE",
+    "ACTIVE",
+    "SOLVED"
+   ],
+   "activeWhen": {
+    "event": "EV_CORE_ENTER"
+   },
+   "solution": [
+    "ITEM_SHARD_F1",
+    "ITEM_SHARD_F2",
+    "ITEM_SHARD_F3",
+    "ITEM_SHARD_F4"
+   ],
+   "errorPriority": [
+    {
+     "if": "F3_before_F2",
+     "line": "VO_ORPH_CONT_ERR_KEY"
+    },
+    {
+     "if": "F4_before_F3",
+     "line": "VO_ORPH_CONT_ERR_POD"
+    },
+    {
+     "if": "F2_before_F1",
+     "line": "VO_ORPH_CONT_ERR_HANDS"
+    },
+    {
+     "else": "VO_ORPH_CONT_ERR_GENERIC"
+    }
+   ],
+   "solvedWhen": {
+    "flag": "FLAG_CONTINUITY_COMPLETE"
+   },
+   "hints": {
+    "H1": {
+     "after_s": 45,
+     "orFails": 1,
+     "text": "HINT_P3_1"
+    },
+    "H2": {
+     "after_s": 90,
+     "orFails": 2,
+     "text": "HINT_P3_2"
+    },
+    "H3": {
+     "after_s": 150,
+     "orFails": 3,
+     "text": "HINT_P3_3"
+    }
+   }
+  }
+ },
+ "scriptedSequences": {
+  "SEQ_OPEN": [
+   "SFX_OPEN_BREATH",
+   "ECHO_OPENING_016",
+   "LN_016_OPEN_01",
+   "LN_016_OPEN_02",
+   "VIS_OPEN_LOOKUP",
+   "SFX_OPEN_CUT",
+   "SYS_OPEN_01",
+   "VIS_WAKE",
+   "EV_CONTROL_GIVEN"
+  ],
+  "SEQ_CORE_DOOR": [
+   "VIS_CORE_DIM",
+   "VO_ORPH_NAMEQ_01",
+   "ECHO_FROST_016",
+   "LN_016_NO",
+   "VIS_016_WRITE",
+   "VIS_FROST_CLEAN",
+   "SET:FLAG_NAMEQ_ACTIVE",
+   "EV_CORE_DOOR_BEAT"
+  ],
+  "SEQ_REVEAL": [
+   "VIS_SOCKET5",
+   "ECHO_SELF_R017",
+   "VO_ORPH_CONT_OK",
+   "SYS_LOG_UNLOCK"
+  ],
+  "SEQ_AFTER_LOG": [
+   "VIS_REFLECTION",
+   "INS_REFLECTION",
+   "VIS_LETHE_OPEN",
+   "SET:FLAG_LETHE_UNLOCKED",
+   "VO_ORPH_LETHE_AVAIL",
+   "SET:FLAG_SPEAK_ENABLED",
+   "VO_ORPH_SPEAK_AVAIL",
+   "EV_REFLECTION_DONE"
+  ]
+ },
+ "loops": {
+  "VO_ORPH_NAMEQ_LOOP": {
+   "while": {
+    "flag": "FLAG_NAMEQ_ACTIVE"
+   },
+   "interval_s": 25,
+   "stopOn": [
+    "EV_ENDING_START"
+   ]
+  }
+ },
+ "finalChoice": {
+  "prompt": "VO_ORPH_FINAL_Q",
+  "nonModal": true,
+  "options": [
+   {
+    "id": "CH_MIRA",
+    "then": {
+     "prompt": "VO_ORPH_STAY_Q",
+     "options": [
+      {
+       "id": "CH_STAY_YES",
+       "ending": "END_HER_NAME"
+      },
+      {
+       "id": "CH_STAY_NO",
+       "ending": "END_CYCLE_018"
+      }
+     ]
+    }
+   },
+   {
+    "id": "CH_OTHER",
+    "input": "playerName",
+    "then": {
+     "line": "VO_ORPH_CORR_REQ",
+     "branch": [
+      {
+       "if": {
+        "flag": "FLAG_STORM_MARKED"
+       },
+       "ending": "END_YOUR_NAME",
+       "stretch": true
+      },
+      {
+       "else": true,
+       "ending": "END_CYCLE_018"
+      }
+     ]
+    }
+   }
+  ],
+  "silentPath": {
+   "event": "EV_LETHE_PULLED",
+   "ending": "END_LETHE"
+  }
+ },
+ "endings": {
+  "END_HER_NAME": {
+   "when": {
+    "all": [
+     {
+      "choice": "CH_MIRA"
+     },
+     {
+      "choice": "CH_STAY_YES"
+     }
+    ]
+   },
+   "scope": "MAIN",
+   "finalText": "SYS_END_HN"
+  },
+  "END_LETHE": {
+   "when": {
+    "all": [
+     {
+      "flag": "FLAG_LETHE_UNLOCKED"
+     },
+     {
+      "event": "EV_LETHE_PULLED"
+     }
+    ]
+   },
+   "scope": "MAIN",
+   "finalText": "SYS_END_LE"
+  },
+  "END_CYCLE_018": {
+   "when": {
+    "any": [
+     {
+      "all": [
+       {
+        "choice": "CH_MIRA"
+       },
+       {
+        "choice": "CH_STAY_NO"
+       }
+      ]
+     },
+     {
+      "all": [
+       {
+        "choice": "CH_OTHER"
+       },
+       {
+        "not": {
+         "flag": "FLAG_STORM_MARKED"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "scope": "CHEAP",
+   "finalText": "SYS_END_CY"
+  },
+  "END_YOUR_NAME": {
+   "when": {
+    "all": [
+     {
+      "choice": "CH_OTHER"
+     },
+     {
+      "flag": "FLAG_STORM_MARKED"
+     }
+    ]
+   },
+   "scope": "STRETCH",
+   "finalText": "SYS_END_YN"
+  }
+ },
+ "audioTriggers": [
+  {
+   "on": "EV_GAME_START",
+   "play": "SILENCE_4S"
+  },
+  {
+   "on": "EV_CONTROL_GIVEN",
+   "play": "AMB_CRADLE"
+  },
+  {
+   "on": "ECHO_HOLD_START",
+   "play": "SFX_ECHO_ON",
+   "dsp": "AMB_ECHO_FILTER"
+  },
+  {
+   "on": "ECHO_HOLD_END",
+   "play": "SFX_ECHO_OFF"
+  },
+  {
+   "on": "EV_LAB_ENTER",
+   "play": [
+    "AMB_LAB",
+    "SFX_TENDER"
+   ]
+  },
+  {
+   "on": "EV_STORM_SEEN",
+   "play": "MUS_STORM_MOTIF"
+  },
+  {
+   "on": "ECHO_ARGUMENT_CONTESTED.swap",
+   "play": "SFX_CONTESTED_TICK"
+  },
+  {
+   "on": "EV_CORROBORATE_SUCCESS",
+   "play": "SFX_SNAP"
+  },
+  {
+   "on": "EV_CODE_CORRECT",
+   "play": [
+    "AMB_LAB_DROP_FIFTH",
+    "SFX_FROST_WRITE"
+   ]
+  },
+  {
+   "on": "EV_CORE_ENTER",
+   "play": "AMB_CORE"
+  },
+  {
+   "on": "EV_CONTINUITY_COMPLETE",
+   "play": "SILENCE_ALL",
+   "until": "EV_LOG_CLOSED"
+  },
+  {
+   "on": "EV_LOG_CLOSED",
+   "play": "AMB_CORE_LOW"
+  },
+  {
+   "on": "EV_LETHE_PULLED",
+   "play": [
+    "SFX_LEVER",
+    "SILENCE_3S",
+    "SFX_ECHO_CASCADE"
+   ]
+  },
+  {
+   "on": "EV_ENDING_START:END_HER_NAME",
+   "play": "MUS_STORM_MOTIF_MAJOR"
+  },
+  {
+   "on": "EV_ENDING_START:END_LETHE",
+   "play": "MUS_STORM_MOTIF_MINOR_SOLO"
+  },
+  {
+   "on": "EV_ENDING_START:END_YOUR_NAME",
+   "play": "MUS_STORM_MOTIF_OPEN"
+  }
+ ],
+ "visualTriggers": [
+  {
+   "on": "EV_ECHO_FIRST_USE",
+   "show": "VIS_TITLE_IN_ECHO",
+   "once": true
+  },
+  {
+   "on": "EV_LAB_ENTER",
+   "show": "VIS_TENDER_WIPE"
+  },
+  {
+   "on": "EV_CORROBORATE_SUCCESS",
+   "show": "VIS_ORPHEUS_STRAIN_DIP"
+  },
+  {
+   "on": "EV_CODE_CORRECT",
+   "run": "SEQ_CORE_DOOR"
+  },
+  {
+   "on": "EV_CONTINUITY_COMPLETE",
+   "run": "SEQ_REVEAL"
+  },
+  {
+   "on": "EV_LOG_CLOSED",
+   "run": "SEQ_AFTER_LOG"
+  }
+ ],
+ "events": [
+  "EV_GAME_START",
+  "EV_CONTROL_GIVEN",
+  "EV_ECHO_FIRST_USE",
+  "EV_LOCKER_OPENED",
+  "EV_ECHO_LOCKER_SEEN",
+  "EV_CARD_TAKEN",
+  "EV_LAB_ENTER",
+  "EV_STORM_SEEN",
+  "EV_STORM_MARKED",
+  "EV_CONTESTED_SEEN",
+  "EV_SNAPPED_KEY_FOUND",
+  "EV_CORROBORATE_FAIL",
+  "EV_CORROBORATE_SUCCESS",
+  "EV_REC03_PLAYED",
+  "EV_CODE_FAIL",
+  "EV_CODE_CORRECT",
+  "EV_CORE_DOOR_BEAT",
+  "EV_CORE_ENTER",
+  "EV_REC04_PLAYED",
+  "EV_SHARD_TAKEN",
+  "EV_SHARD_PLACED",
+  "EV_CONTINUITY_ERROR",
+  "EV_CONTINUITY_COMPLETE",
+  "EV_SELF_REPLAY_DONE",
+  "EV_LOG_CLOSED",
+  "EV_REFLECTION_DONE",
+  "EV_FINAL_QA",
+  "EV_FINAL_ANSWER",
+  "EV_LETHE_PULLED",
+  "EV_ENDING_START",
+  "EV_ENDING_DONE",
+  "EV_RESTART",
+  "ECHO_HOLD_START",
+  "ECHO_HOLD_END"
+ ],
+ "optionalContent": [
+  "OBJ_CREW_PHOTO",
+  "OBJ_WHITEBOARD",
+  "OBJ_PHOTO",
+  "ECHO_PHOTO",
+  "ECHO_TALLY",
+  "REC_01",
+  "REC_02",
+  "NOTE_06",
+  "OBJ_PENCIL",
+  "END_YOUR_NAME",
+  "ECHO_SIXTEEN",
+  "QA_C1_WHERE_SEN"
+ ],
+ "codedayCut": {
+  "keep": [
+   "CH0..CH4",
+   "P0",
+   "P1",
+   "P2A",
+   "P2B",
+   "P3",
+   "REC_03",
+   "REC_04",
+   "END_HER_NAME",
+   "END_LETHE"
+  ],
+  "cheapIfTime": [
+   "END_CYCLE_018 (authored fallback)",
+   "ECHO_SELF_R017 (authored path)",
+   "REC_02",
+   "OBJ_PHOTO"
+  ],
+  "cut": [
+   "END_YOUR_NAME",
+   "OBJ_CREW_PHOTO",
+   "OBJ_WHITEBOARD",
+   "REC_01",
+   "NOTE_06",
+   "voice acting",
+   "ECHO_SIXTEEN"
+  ]
+ }
+}
