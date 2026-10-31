@@ -1,9 +1,16 @@
 import { access, readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 const required = [
-  'AGENT_SYNC.md','AGENT_STATUS.md','AGENT_ROUTER.md','AGENT_PROMPTS.md',
-  'STORY_WORKSHOP.md','STORY_BIBLE.md','STORY_DECISIONS.md',
-  'TECHNICAL_RESEARCH_PLAN.md','ASSET_PIPELINE.md','ASSET_REGISTER.csv'
+  'docs/coordination/AGENT_SYNC.md',
+  'docs/coordination/AGENT_STATUS.md',
+  'docs/coordination/AGENT_ROUTER.md',
+  'docs/coordination/AGENT_PROMPTS.md',
+  'docs/narrative/STORY_WORKSHOP.md',
+  'docs/narrative/STORY_BIBLE.md',
+  'docs/narrative/STORY_DECISIONS.md',
+  'docs/technical/TECHNICAL_RESEARCH_PLAN.md',
+  'docs/assets/ASSET_PIPELINE.md',
+  'docs/assets/ASSET_REGISTER.csv'
 ];
 let failed = false;
 for (const f of required) {

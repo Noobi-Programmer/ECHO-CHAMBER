@@ -12,10 +12,10 @@
 
 | Task | Track | Temporary role | Session/person | Status | Branch/worktree | Exact write-set | Reviewer | Handoff |
 |---|---|---|---|---|---|---|---|---|
-| STORY-001 | Experience | Story workshop lead | Arpita / Claude Code (initial proposal) | READY | `agent/claude/story-001` | `research/story/**`, `STORY_WORKSHOP.md` (proposal only) | Abi + independent reviewer | Pending |
+| STORY-001 | Experience | Story workshop lead | Arpita / Claude Code (initial proposal) | READY | `agent/claude/story-001` | `research/story/**`, `docs/narrative/STORY_WORKSHOP.md` (proposal only) | Abi + independent reviewer | Pending |
 | TECH-001 | Build | Engine researcher | dynamic: Abi/Kishore session selected | READY | `agent/<session>/tech-001` | `research/technical/**` | Different session | Pending |
-| AGENT-001 | Build | Agent/skill researcher | dynamic session | READY | `agent/<session>/agent-001` | `research/agents/**`, `SKILLS_PLAN.md` | Different session | Pending |
-| ASSET-001 | Build | Asset automation researcher | dynamic session | READY | `agent/<session>/asset-001` | `research/assets/**`, `ASSET_PIPELINE.md` proposal | Licence reviewer | Pending |
+| AGENT-001 | Build | Agent/skill researcher | dynamic session | READY | `agent/<session>/agent-001` | `research/agents/**`, `docs/coordination/SKILLS_PLAN.md` | Different session | Pending |
+| ASSET-001 | Build | Asset automation researcher | dynamic session | READY | `agent/<session>/asset-001` | `research/assets/**`, `docs/assets/ASSET_PIPELINE.md` proposal | Licence reviewer | Pending |
 | QA-001 | Build | QA/release researcher | dynamic session | READY | `agent/<session>/qa-001` | `research/qa/**` | Integration captain | Pending |
 | SPRITE-PRODUCTION-001 | Build | Lead Character Artist & Sprite Production Engineer | Antigravity | REVIEW | `agent/antigravity/sprite-production-c` | `AGENT_STATUS.md`, `docs/assets/SPRITE_PRODUCTION_002_*`, `docs/assets/{VISUAL_ASSET_MANIFEST.csv,ANIMATION_MANIFEST.csv}`, `public/assets/characters/**`, `scripts/generate-player-c-sprites.mjs` | Abi + licence reviewer | Approved Concept C Block 1 production spritesheet, frames, metadata, previews, manifests delivered and verified |
 

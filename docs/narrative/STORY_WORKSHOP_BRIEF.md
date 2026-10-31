@@ -59,4 +59,4 @@ Do not claim the story is “cinematic” merely because it contains cutscenes. 
 
 ## Approval gate
 
-The recommendation remains a draft until Abi reviews it. Record approved facts in `STORY_DECISIONS.md` and then update `STORY_BIBLE.md`, `EXPERIENCE_BLUEPRINT.md` and `docs/narrative/NARRATIVE_SCRIPT.md` consistently.
+The recommendation remains a draft until Abi reviews it. Record approved facts in `docs/narrative/STORY_DECISIONS.md` and then update `docs/narrative/STORY_BIBLE.md`, `docs/planning/EXPERIENCE_BLUEPRINT.md` and `docs/narrative/NARRATIVE_SCRIPT.md` consistently.

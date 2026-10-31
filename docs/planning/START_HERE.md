@@ -38,7 +38,7 @@ Do not build rooms, lore-heavy dialogue or final art before the story team estab
 4. Approve engine after a timed technical spike.
 5. Approve the production plan and task allocations.
 
-Nothing is `STORY_LOCK: APPROVED` until Abi explicitly marks it so in `STORY_DECISIONS.md`.
+Nothing is `STORY_LOCK: APPROVED` until Abi explicitly marks it so in `docs/narrative/STORY_DECISIONS.md`.
 
 ## Core developer and agent commands
 

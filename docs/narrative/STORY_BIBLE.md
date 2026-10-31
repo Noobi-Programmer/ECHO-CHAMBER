@@ -1,6 +1,6 @@
 # STORY_BIBLE — ECHO//CHAMBER
 
-**Status:** PROPOSAL v0.2 — `STORY_LOCK: DRAFT`. Becomes canon only when Abi approves SD-005…SD-012 in `STORY_DECISIONS.md`. Until then, the root `/STORY_BIBLE.md` is untouched and this file is the proposed replacement.
+**Status:** PROPOSAL v0.2 — `STORY_LOCK: DRAFT`. Becomes canon only when Abi approves SD-005…SD-012 in `STORY_DECISIONS.md`. Initial provisional draft archived at `STORY_BIBLE_DRAFT.md`.
 
 Related: `CHARACTER_BIBLE.md` (people) · `CHRONOLOGY_AND_CLUE_MAP.md` (exact dates, evidence) · `NARRATIVE_SCRIPT.md` (all text).
 

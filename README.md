@@ -31,66 +31,92 @@ npm run skills:sync
 
 ---
 
-## Repository Structure
+## Clean Repository Structure
+
+The repository keeps only essential project roots in the top-level directory, with all specifications, planning, manifests, and research organized into focused subdirectories:
 
 ```text
-├── src/                     # Game source code (Phaser 3 + TypeScript)
-│   ├── main.ts              # Entry point and Phaser game bootstrap
-│   ├── style.css            # Game viewport styling and retro CRT styles
-│   ├── art/                 # Procedural pixel-art textures and palettes
-│   ├── data/                # Story dialogue, logs, and interaction data
-│   ├── scenes/              # Game scenes (StationScene exploration & ECHO)
-│   ├── systems/             # Subsystems (AudioDirector, UI overlays)
-│   └── world/               # Room layout and coordinate definitions
-├── docs/                    # Detailed design bibles and asset specifications
-│   ├── assets/              # Asset manifests (audio, animations, voice, cues)
-│   └── narrative/           # Narrative script, character bible, clue maps, state
-├── research/                # Technical research spikes and candidate evaluations
-│   ├── agents/              # Multi-agent capability reports
-│   ├── assets/              # Audio/visual asset candidates & license audits
-│   ├── qa/                  # Test automation research & reports
-│   ├── story/               # Story workshop treatment evaluations
-│   └── technical/           # Engine benchmark notes & comparison templates
-├── scripts/                 # Maintenance and validation utilities
-│   ├── check-agent-skills.mjs # Validates skill frontmatter and mirrors
-│   ├── sync-skills.mjs      # Synchronizes .agents/skills into .claude/skills
-│   └── validate-plan.mjs    # Validates required project plan documents
-├── .agents/skills/          # Canonical project skills library (19 skills)
-├── .claude/skills/          # Mirrored skills for Claude Code and OmniRush
-└── [Root Documents]         # High-level architecture, contracts, and planning
+├── src/                          # Game source code (Phaser 3 + TypeScript)
+│   ├── main.ts                   # Entry point and Phaser game bootstrap
+│   ├── style.css                 # Game viewport styling and retro CRT styles
+│   ├── art/                      # Procedural pixel-art textures and palettes
+│   ├── data/                     # Story dialogue, logs, and interaction data
+│   ├── scenes/                   # Game scenes (StationScene exploration & ECHO)
+│   ├── systems/                  # Subsystems (AudioDirector, UI overlays)
+│   └── world/                    # Room layout and coordinate definitions
+├── docs/                         # Canonical specifications and design bibles
+│   ├── planning/                 # Game design, pitch, charter, and roadmap
+│   ├── coordination/             # Multi-agent contracts, status board, prompts, skills
+│   ├── narrative/                # Dialogue scripts, character bibles, clue maps, state
+│   ├── technical/                # Engine benchmarks, architecture proposal, QA plan
+│   └── assets/                   # Asset pipeline, audio/visual manifests, license registers
+├── research/                     # Technical spikes, candidate audits, and logs
+│   ├── agents/                   # Multi-agent capability reports
+│   ├── assets/                   # Audio/visual asset candidates & license audits
+│   ├── qa/                       # Test automation research & reports
+│   ├── story/                    # Story workshop treatment evaluations
+│   └── technical/                # Engine benchmark notes & comparison templates
+├── scripts/                      # Validation and skill synchronization utilities
+│   ├── check-agent-skills.mjs    # Validates skill frontmatter and mirrors
+│   ├── sync-skills.mjs           # Synchronizes .agents/skills into .claude/skills
+│   └── validate-plan.mjs         # Validates required project plan documents
+├── .agents/skills/               # Canonical project skills library (19 skills)
+├── .claude/skills/               # Mirrored skills for Claude Code and OmniRush
+├── AGENTS.md                     # Repository-wide rules and constraints
+├── CLAUDE.md                     # Claude Code agent instructions
+├── README.md                     # Project overview and directory guide
+├── index.html                    # Web app entrypoint
+├── package.json                  # npm dependencies and scripts
+├── tsconfig.json                 # TypeScript compiler configuration
+└── vite.config.ts                # Vite bundler configuration
 ```
 
 ---
 
 ## Key Documents Index
 
-### 1. Getting Started & Coordination
-- [`START_HERE.md`](./START_HERE.md) — 60-minute quickstart strategy and tracks.
-- [`CODEDAY_RUNSHEET.md`](./CODEDAY_RUNSHEET.md) — CodeDay schedule, pitch, roles, and cut order.
-- [`AGENT_SYNC.md`](./AGENT_SYNC.md) — Mandatory multi-agent coordination contract.
-- [`AGENT_STATUS.md`](./AGENT_STATUS.md) — Real-time task status board and coordinator lease.
+### 1. Planning & Design (`docs/planning/`)
+- [`docs/planning/START_HERE.md`](./docs/planning/START_HERE.md) — 60-minute quickstart strategy and tracks.
+- [`docs/planning/CODEDAY_RUNSHEET.md`](./docs/planning/CODEDAY_RUNSHEET.md) — CodeDay schedule, pitch, roles, and cut order.
+- [`docs/planning/PROJECT_CHARTER.md`](./docs/planning/PROJECT_CHARTER.md) — Product pillars and non-goals.
+- [`docs/planning/GAME_DESIGN.md`](./docs/planning/GAME_DESIGN.md) — Full game design document and mechanic specs.
+- [`docs/planning/IDEA.md`](./docs/planning/IDEA.md) — High-level pitch and player promise.
+- [`docs/planning/EXPERIENCE_BLUEPRINT.md`](./docs/planning/EXPERIENCE_BLUEPRINT.md) — Playthrough timeline, pacing, and input language.
+- [`docs/planning/IMPLEMENTATION_ROADMAP.md`](./docs/planning/IMPLEMENTATION_ROADMAP.md) — Phased delivery plan from prototype to ship.
+- [`docs/planning/DECISION_LOG.md`](./docs/planning/DECISION_LOG.md) — General project decision log.
+
+### 2. Multi-Agent Coordination (`docs/coordination/`)
 - [`AGENTS.md`](./AGENTS.md) — Repository-wide rules and constraints.
-- [`SKILL_DISCOVERY.md`](./SKILL_DISCOVERY.md) — Runtime-native skill discovery and expansion.
+- [`docs/coordination/AGENT_SYNC.md`](./docs/coordination/AGENT_SYNC.md) — Mandatory multi-agent coordination contract.
+- [`docs/coordination/AGENT_STATUS.md`](./docs/coordination/AGENT_STATUS.md) — Real-time task status board and coordinator lease.
+- [`docs/coordination/AGENT_ROUTER.md`](./docs/coordination/AGENT_ROUTER.md) — Dynamic task router and assignment algorithm.
+- [`docs/coordination/AGENT_PROMPTS.md`](./docs/coordination/AGENT_PROMPTS.md) — Role-specific launch prompts.
+- [`docs/coordination/AGENT_SYSTEM_PLAN.md`](./docs/coordination/AGENT_SYSTEM_PLAN.md) — Dynamic agent system design and topology.
+- [`docs/coordination/TEAM_DISPATCH.md`](./docs/coordination/TEAM_DISPATCH.md) — Initial parallel team assignments.
+- [`docs/coordination/SKILL_DISCOVERY.md`](./docs/coordination/SKILL_DISCOVERY.md) — Runtime-native skill discovery and expansion.
+- [`docs/coordination/SKILLS_PLAN.md`](./docs/coordination/SKILLS_PLAN.md) — Skills inventory and task recommendations.
+- [`docs/coordination/GITHUB_WORKFLOW.md`](./docs/coordination/GITHUB_WORKFLOW.md) — Branch strategy, PR requirements, and safe parallelism.
 
-### 2. Story & Game Experience
-- [`GAME_DESIGN.md`](./GAME_DESIGN.md) — Full game design document and mechanic specs.
-- [`IDEA.md`](./IDEA.md) — High-level pitch and player promise.
-- [`EXPERIENCE_BLUEPRINT.md`](./EXPERIENCE_BLUEPRINT.md) — Playthrough timeline, pacing, and input language.
-- [`STORY_BIBLE.md`](./STORY_BIBLE.md) — Core story premises, characters, and guardrails.
-- [`STORY_DECISIONS.md`](./STORY_DECISIONS.md) — Story decisions and approval lock status.
-- [`docs/narrative/NARRATIVE_SCRIPT.md`](./docs/narrative/NARRATIVE_SCRIPT.md) — Full character dialogue and scene text.
+### 3. Narrative & Story (`docs/narrative/`)
+- [`docs/narrative/STORY_BIBLE.md`](./docs/narrative/STORY_BIBLE.md) — Canonical story bible, character rules, and guardrails.
+- [`docs/narrative/STORY_DECISIONS.md`](./docs/narrative/STORY_DECISIONS.md) — Story decisions and approval lock status.
+- [`docs/narrative/NARRATIVE_SCRIPT.md`](./docs/narrative/NARRATIVE_SCRIPT.md) — Full dialogue script, cues, and scene texts.
+- [`docs/narrative/CHARACTER_BIBLE.md`](./docs/narrative/CHARACTER_BIBLE.md) — Character dossiers and voices.
+- [`docs/narrative/CHRONOLOGY_AND_CLUE_MAP.md`](./docs/narrative/CHRONOLOGY_AND_CLUE_MAP.md) — Chronological timeline and clue cross-references.
+- [`docs/narrative/STORY_WORKSHOP.md`](./docs/narrative/STORY_WORKSHOP.md) — Story workshop synthesis and treatment comparisons.
+- [`docs/narrative/STORY_REVIEW_RUBRIC.md`](./docs/narrative/STORY_REVIEW_RUBRIC.md) — Quality evaluation rubric.
 
-### 3. Engineering & Testing
-- [`TECHNICAL_RESEARCH_PLAN.md`](./TECHNICAL_RESEARCH_PLAN.md) — Technical spike requirements.
-- [`ARCHITECTURE_PROPOSAL.md`](./ARCHITECTURE_PROPOSAL.md) — Engine architecture and systems design.
-- [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMAP.md) — Phased delivery plan from prototype to ship.
-- [`QA_PLAN.md`](./QA_PLAN.md) — Functional, accessibility, and blind-playtest criteria.
+### 4. Technical & Engineering (`docs/technical/`)
+- [`docs/technical/TECHNICAL_RESEARCH_PLAN.md`](./docs/technical/TECHNICAL_RESEARCH_PLAN.md) — Engine benchmark and technical spikes.
+- [`docs/technical/ARCHITECTURE_PROPOSAL.md`](./docs/technical/ARCHITECTURE_PROPOSAL.md) — Engine architecture, state machine, and systems.
+- [`docs/technical/QA_PLAN.md`](./docs/technical/QA_PLAN.md) — Functional, accessibility, and blind-playtest criteria.
+- [`docs/technical/SOURCES_AND_RESEARCH.md`](./docs/technical/SOURCES_AND_RESEARCH.md) — Official documentation and research references.
 
-### 4. Assets & Licensing
-- [`ASSET_PIPELINE.md`](./ASSET_PIPELINE.md) — Safe asset acquisition, audit, and ingestion pipeline.
-- [`ASSET_REGISTER.csv`](./ASSET_REGISTER.csv) — Register of all imported third-party assets and licences.
-- [`ASSET_SOURCES.md`](./ASSET_SOURCES.md) — Permitted sources and legal verification rules.
-- [`docs/assets/`](./docs/assets/) — Audio, animation, and visual asset manifests.
+### 5. Assets & Licensing (`docs/assets/`)
+- [`docs/assets/ASSET_PIPELINE.md`](./docs/assets/ASSET_PIPELINE.md) — Safe asset acquisition, audit, and ingestion pipeline.
+- [`docs/assets/ASSET_REGISTER.csv`](./docs/assets/ASSET_REGISTER.csv) — Register of all imported third-party assets and licences.
+- [`docs/assets/ASSET_SOURCES.md`](./docs/assets/ASSET_SOURCES.md) — Permitted sources and legal verification rules.
+- Manifests: `AUDIO_MANIFEST.csv`, `ANIMATION_MANIFEST.csv`, `VISUAL_ASSET_MANIFEST.csv`, `VOICE_RECORDING_MANIFEST.csv`.
 
 ---
 
