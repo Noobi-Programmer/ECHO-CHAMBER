@@ -1,0 +1,125 @@
+{
+  "asset": "iteration-kneel",
+  "sheet": "../sheets/char-iteration-kneel-001.png",
+  "cell": {
+    "w": 16,
+    "h": 32
+  },
+  "grid": {
+    "cols": 8,
+    "rows": 1
+  },
+  "origin": {
+    "x": 8,
+    "y": 31
+  },
+  "directions": [
+    "S",
+    "N"
+  ],
+  "note": "Frame 3 is the writing gesture for the narrative beat DONT ANSWER; lettering is intentionally kept out of the sprite pixels.",
+  "frames": [
+    {
+      "index": 0,
+      "name": "kneel",
+      "x": 0,
+      "y": 0,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "kneel"
+    },
+    {
+      "index": 1,
+      "name": "card",
+      "x": 16,
+      "y": 0,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "card"
+    },
+    {
+      "index": 2,
+      "name": "look_up",
+      "x": 32,
+      "y": 0,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "look_up"
+    },
+    {
+      "index": 3,
+      "name": "write_dont_answer",
+      "x": 48,
+      "y": 0,
+      "w": 16,
+      "h": 32,
+      "direction": "N",
+      "action": "write_dont_answer"
+    },
+    {
+      "index": 4,
+      "name": "dissolve_1",
+      "x": 64,
+      "y": 0,
+      "w": 16,
+      "h": 32,
+      "direction": "N",
+      "action": "dissolve"
+    },
+    {
+      "index": 5,
+      "name": "dissolve_2",
+      "x": 80,
+      "y": 0,
+      "w": 16,
+      "h": 32,
+      "direction": "N",
+      "action": "dissolve"
+    },
+    {
+      "index": 6,
+      "name": "dissolve_3",
+      "x": 96,
+      "y": 0,
+      "w": 16,
+      "h": 32,
+      "direction": "N",
+      "action": "dissolve"
+    },
+    {
+      "index": 7,
+      "name": "dissolve_4",
+      "x": 112,
+      "y": 0,
+      "w": 16,
+      "h": 32,
+      "direction": "N",
+      "action": "dissolve"
+    }
+  ],
+  "animations": {
+    "kneel_memory": {
+      "frames": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "fps": 8,
+      "loop": false
+    },
+    "dissolve": {
+      "frames": [
+        4,
+        5,
+        6,
+        7
+      ],
+      "fps": 8,
+      "loop": false
+    }
+  }
+}

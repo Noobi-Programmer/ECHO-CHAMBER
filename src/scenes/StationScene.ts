@@ -106,7 +106,8 @@ export class StationScene extends Phaser.Scene {
     this.lamps.push({ x: 0, y: 0, r: 52, i: 0.8, on: () => this.player.visible, flicker: false });
 
     const kb = this.input.keyboard!;
-    this.keys = kb.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,E,Q,SPACE,ENTER') as Record<string, Phaser.Input.Keyboard.Key>;
+    this.keys = kb.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,E,Q,SPACE,ENTER,SHIFT') as Record<string, Phaser.Input.Keyboard.Key>;
+    ui.setEvidenceProvider(() => this.getEvidence());
     kb.addCapture('UP,DOWN,LEFT,RIGHT,SPACE');
   }
 
@@ -501,16 +502,19 @@ export class StationScene extends Phaser.Scene {
     const moving = vx !== 0 || vy !== 0;
     if (moving) {
       const len = Math.hypot(vx, vy);
-      const sp = SPEED * (this.echoT > 0.5 ? 0.75 : 1) * dt / 1000;
+      const isRunning = Boolean(k.SHIFT && k.SHIFT.isDown);
+      const runMult = isRunning ? 1.45 : 1;
+      const sp = SPEED * (this.echoT > 0.5 ? 0.75 : runMult) * dt / 1000;
       const nx = this.player.x + (vx / len) * sp;
       const ny = this.player.y + (vy / len) * sp;
       if (!this.blocked(nx, this.player.y)) this.player.x = nx;
       if (!this.blocked(this.player.x, ny)) this.player.y = ny;
       if (Math.abs(vx) > 0) { this.dir = 'side'; this.flip = vx < 0; }
       if (vy !== 0 && vx === 0) this.dir = vy < 0 ? 'up' : 'down';
-      const oldFrame = Math.floor(this.walkClock / 170) % 2;
+      const stepRate = isRunning ? 120 : 170;
+      const oldFrame = Math.floor(this.walkClock / stepRate) % 2;
       this.walkClock += dt;
-      const newFrame = Math.floor(this.walkClock / 170) % 2;
+      const newFrame = Math.floor(this.walkClock / stepRate) % 2;
       if (newFrame !== oldFrame && newFrame === 1) audio.footstep();
       this.idleClock = 0;
     } else {
@@ -1248,6 +1252,39 @@ export class StationScene extends Phaser.Scene {
     await ui.fadeTo(1, 1500);
     this.finish(ENDINGS.yourName);
     await ui.fadeTo(0, 10);
+  }
+
+  // ----------------------------------------------------------- evidence / inventory
+  getEvidence() {
+    const items: { id: string; name: string; desc: string }[] = [];
+    if (this.has('cardTaken')) {
+      items.push({ id: 'card', name: 'Maintenance Keycard', desc: 'Authorises door transit between Cradle, Transit Hub, and Observation Lab.' });
+    }
+    if (this.has('tallySeen')) {
+      items.push({ id: 'tally', name: 'Cradle Tally Scratches', desc: '16 tally marks inscribed into the alloy rim beneath your waking chamber.' });
+    }
+    if (this.has('plateUp')) {
+      items.push({ id: 'plate', name: 'Deck Plate 03 Bypass', desc: 'Pried maintenance plate concealing severed diagnostic cables.' });
+    }
+    if (this.has('slotSeen')) {
+      items.push({ id: 'slot', name: 'Sheared Lethe Key', desc: 'Snapped brass key fragment wedged into the emergency purge mechanism.' });
+    }
+    if (this.has('ruleSeen')) {
+      items.push({ id: 'rule', name: 'Wall Stencil Maxim', desc: '"A MEMORY YOU CAN EDIT IS NOT EVIDENCE." Underlined twice by hand.' });
+    }
+    if (this.has('corroborated')) {
+      items.push({ id: 'corr', name: 'Corroborated Memory Record', desc: 'Physical discrepancy confirming Dr. Voss altered the shutdown memory.' });
+    }
+    if (this.has('recPlayed')) {
+      items.push({ id: 'rec', name: "Mira's Unsealed Audio Memo", desc: '"You\'re not me. You\'ll feel like me sometimes... That\'s evidence. It isn\'t you."' });
+    }
+    if (this.has('codeEntered')) {
+      items.push({ id: 'code', name: 'The Well Geometric Cipher', desc: 'Three-glyph authorization sequence verified: ◯ □ △.' });
+    }
+    return {
+      recall: this.recallN,
+      items,
+    };
   }
 
   // ----------------------------------------------------------- test hooks

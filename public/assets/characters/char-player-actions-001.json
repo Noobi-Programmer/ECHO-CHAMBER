@@ -1,47 +1,249 @@
 {
-  "assetId": "CHAR-PLAYER-ACTIONS-001",
-  "name": "Dr. Mira Sen / Iteration 017 Actions & ECHO Animations",
-  "sheet": {
-    "file": "public/assets/characters/player/char-player-actions-001.png",
-    "width": 96,
-    "height": 160,
-    "cellWidth": 16,
-    "cellHeight": 32
+  "asset": "player-actions",
+  "sheet": "../sheets/char-player-actions-001.png",
+  "cell": {
+    "w": 16,
+    "h": 32
   },
-  "pivot": {
+  "grid": {
+    "cols": 6,
+    "rows": 5,
+    "populated": 17
+  },
+  "origin": {
     "x": 8,
     "y": 31
   },
+  "directions": [
+    "S",
+    "N",
+    "E"
+  ],
+  "default_direction": "E",
+  "frames": [
+    {
+      "index": 0,
+      "name": "examine_1",
+      "x": 0,
+      "y": 0,
+      "w": 16,
+      "h": 32,
+      "direction": "E",
+      "action": "examine"
+    },
+    {
+      "index": 1,
+      "name": "examine_2",
+      "x": 16,
+      "y": 0,
+      "w": 16,
+      "h": 32,
+      "direction": "E",
+      "action": "examine"
+    },
+    {
+      "index": 2,
+      "name": "examine_3",
+      "x": 32,
+      "y": 0,
+      "w": 16,
+      "h": 32,
+      "direction": "E",
+      "action": "examine"
+    },
+    {
+      "index": 3,
+      "name": "echo_on_1",
+      "x": 48,
+      "y": 0,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "echo_on"
+    },
+    {
+      "index": 4,
+      "name": "echo_on_2",
+      "x": 64,
+      "y": 0,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "echo_on"
+    },
+    {
+      "index": 5,
+      "name": "echo_on_3",
+      "x": 80,
+      "y": 0,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "echo_on"
+    },
+    {
+      "index": 6,
+      "name": "echo_on_4",
+      "x": 0,
+      "y": 32,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "echo_on"
+    },
+    {
+      "index": 7,
+      "name": "echo_idle_1",
+      "x": 16,
+      "y": 32,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "echo_idle"
+    },
+    {
+      "index": 8,
+      "name": "echo_idle_2",
+      "x": 32,
+      "y": 32,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "echo_idle"
+    },
+    {
+      "index": 9,
+      "name": "echo_off_1",
+      "x": 48,
+      "y": 32,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "echo_off"
+    },
+    {
+      "index": 10,
+      "name": "echo_off_2",
+      "x": 64,
+      "y": 32,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "echo_off"
+    },
+    {
+      "index": 11,
+      "name": "echo_off_3",
+      "x": 80,
+      "y": 32,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "echo_off"
+    },
+    {
+      "index": 12,
+      "name": "cradle_wake_1",
+      "x": 0,
+      "y": 64,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "cradle_wake"
+    },
+    {
+      "index": 13,
+      "name": "cradle_wake_2",
+      "x": 16,
+      "y": 64,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "cradle_wake"
+    },
+    {
+      "index": 14,
+      "name": "cradle_wake_3",
+      "x": 32,
+      "y": 64,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "cradle_wake"
+    },
+    {
+      "index": 15,
+      "name": "cradle_wake_4",
+      "x": 48,
+      "y": 64,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "cradle_wake"
+    },
+    {
+      "index": 16,
+      "name": "cradle_wake_5",
+      "x": 64,
+      "y": 64,
+      "w": 16,
+      "h": 32,
+      "direction": "S",
+      "action": "cradle_wake"
+    }
+  ],
   "animations": {
     "examine": {
-      "row": 0,
-      "frames": 3,
+      "frames": [
+        0,
+        1,
+        2
+      ],
       "fps": 8,
-      "loop": false
+      "loop": false,
+      "hold_last": false
     },
-    "echo_activate": {
-      "row": 1,
-      "frames": 4,
+    "echo_on": {
+      "frames": [
+        3,
+        4,
+        5,
+        6
+      ],
       "fps": 10,
-      "loop": false
+      "loop": false,
+      "hold_last": true
     },
     "echo_idle": {
-      "row": 2,
-      "frames": 2,
+      "frames": [
+        7,
+        8
+      ],
       "fps": 4,
-      "loop": true
+      "loop": true,
+      "hold_last": false
     },
-    "echo_deactivate": {
-      "row": 3,
-      "frames": 3,
+    "echo_off": {
+      "frames": [
+        9,
+        10,
+        11
+      ],
       "fps": 8,
-      "loop": false
+      "loop": false,
+      "hold_last": false
     },
-    "wake_cradle": {
-      "row": 4,
-      "frames": 5,
+    "cradle_wake": {
+      "frames": [
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
       "fps": 6,
-      "loop": false
+      "loop": false,
+      "hold_last": false
     }
   }
 }
