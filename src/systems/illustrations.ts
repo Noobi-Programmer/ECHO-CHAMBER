@@ -17,9 +17,10 @@ export const ILLUSTRATION_MAP: Record<string, IllustrationData> = {
   cradle: {
     id: 'cradle',
     present: 'assets/illustrations/cradle/cradle-chamber-001.png',
+    echo: 'assets/illustrations/cradle/cradle-chamber-echo-001.png',
     title: 'MEDICAL RECONSTRUCTION CHAMBER // UNIT 17',
     tag: 'CRADLE BAY // CHAMBER 017',
-    notes: 'Empty medical reconstruction chamber close-up.',
+    notes: 'Empty medical reconstruction chamber close-up in present; 16 tally marks scratched on lid interior in ECHO.',
   },
 
   // 2. Cradle Bay — Voss Cryostasis Pod
