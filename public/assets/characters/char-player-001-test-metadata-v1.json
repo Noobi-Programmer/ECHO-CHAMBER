@@ -1,0 +1,74 @@
+{
+  "assetId": "CHAR-PLAYER-001",
+  "version": "test-v1",
+  "status": "CONCEPT-REVIEW",
+  "source": "Hand-authored native-pixel script (original work)",
+  "transparency": true,
+  "sheet": {
+    "file": "char-player-001-test-spritesheet-v1.png",
+    "width": 80,
+    "height": 96,
+    "frameWidth": 16,
+    "frameHeight": 32,
+    "columns": 5,
+    "rows": 3
+  },
+  "pivot": {
+    "x": 8,
+    "y": 31,
+    "description": "bottom centre; feet occupy row 31"
+  },
+  "fps": 8,
+  "loop": true,
+  "frameOrder": [
+    {
+      "direction": "south",
+      "row": 0,
+      "frames": [
+        "idle",
+        "walk-0",
+        "walk-1",
+        "walk-2",
+        "walk-3"
+      ]
+    },
+    {
+      "direction": "north",
+      "row": 1,
+      "frames": [
+        "idle",
+        "walk-0",
+        "walk-1",
+        "walk-2",
+        "walk-3"
+      ]
+    },
+    {
+      "direction": "east",
+      "row": 2,
+      "frames": [
+        "idle",
+        "walk-0",
+        "walk-1",
+        "walk-2",
+        "walk-3"
+      ],
+      "west": "mirror east"
+    }
+  ],
+  "integration": {
+    "south": [
+      "p_down_0",
+      "p_down_1"
+    ],
+    "north": [
+      "p_up_0",
+      "p_up_1"
+    ],
+    "east": [
+      "p_side_0",
+      "p_side_1"
+    ],
+    "west": "setFlipX(true) on east"
+  }
+}

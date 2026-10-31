@@ -1,12 +1,12 @@
 anim_id,asset_id,name,priority,owner,directions,frames,frame_size,fps,loop,origin_px,trigger,status,notes
-ANIM-PLAYER-IDLE-SOUTH,CHAR-PLAYER-001,Player idle south,P0,OmniRush,SOUTH,1,16x32,0,n/a,"8,31 (bottom centre)",no input,IMPLEMENTED-PLACEHOLDER,West = mirrored east.
-ANIM-PLAYER-WALK-SOUTH,CHAR-PLAYER-001,Player walk south,P0,OmniRush,SOUTH,4,16x32,8,loop,"8,31",movement input,IMPLEMENTED-PLACEHOLDER,"Today 2 frames; 4 recommended. Collision box (+-4 px wide, feet) must not change."
+ANIM-PLAYER-IDLE-SOUTH,CHAR-PLAYER-001,Player idle south,P0,Antigravity,SOUTH,1,16x32,0,n/a,"8,31 (bottom centre)",no input,PRODUCTION-READY,Approved Concept C 1-frame idle south. Transparent background; feet grounded at y=31.
+ANIM-PLAYER-WALK-SOUTH,CHAR-PLAYER-001,Player walk south,P0,Antigravity,SOUTH,4,16x32,8,loop,"8,31",movement input,PRODUCTION-READY,"Approved Concept C 4-frame walk south. Restrained adult movement; collision box (+-4 px wide, feet) preserved."
 ANIM-GHOST-WALK-SOUTH,CHAR-ITERATION-GHOST-001,Ghost walk south,P0,OmniRush,SOUTH,4,16x32,8,loop,"8,31",echo vignette path,IMPLEMENTED-PLACEHOLDER,Same timing as player so a replay of the player path matches.
-ANIM-PLAYER-IDLE-NORTH,CHAR-PLAYER-001,Player idle north,P0,OmniRush,NORTH,1,16x32,0,n/a,"8,31 (bottom centre)",no input,IMPLEMENTED-PLACEHOLDER,West = mirrored east.
-ANIM-PLAYER-WALK-NORTH,CHAR-PLAYER-001,Player walk north,P0,OmniRush,NORTH,4,16x32,8,loop,"8,31",movement input,IMPLEMENTED-PLACEHOLDER,"Today 2 frames; 4 recommended. Collision box (+-4 px wide, feet) must not change."
+ANIM-PLAYER-IDLE-NORTH,CHAR-PLAYER-001,Player idle north,P0,Antigravity,NORTH,1,16x32,0,n/a,"8,31 (bottom centre)",no input,PRODUCTION-READY,Approved Concept C 1-frame idle north. Asymmetrical diagonal back yoke.
+ANIM-PLAYER-WALK-NORTH,CHAR-PLAYER-001,Player walk north,P0,Antigravity,NORTH,4,16x32,8,loop,"8,31",movement input,PRODUCTION-READY,"Approved Concept C 4-frame walk north. Natural stride, amber heel accents."
 ANIM-GHOST-WALK-NORTH,CHAR-ITERATION-GHOST-001,Ghost walk north,P0,OmniRush,NORTH,4,16x32,8,loop,"8,31",echo vignette path,IMPLEMENTED-PLACEHOLDER,Same timing as player so a replay of the player path matches.
-ANIM-PLAYER-IDLE-EAST,CHAR-PLAYER-001,Player idle east,P0,OmniRush,EAST,1,16x32,0,n/a,"8,31 (bottom centre)",no input,IMPLEMENTED-PLACEHOLDER,West = mirrored east.
-ANIM-PLAYER-WALK-EAST,CHAR-PLAYER-001,Player walk east,P0,OmniRush,EAST,4,16x32,8,loop,"8,31",movement input,IMPLEMENTED-PLACEHOLDER,"Today 2 frames; 4 recommended. Collision box (+-4 px wide, feet) must not change."
+ANIM-PLAYER-IDLE-EAST,CHAR-PLAYER-001,Player idle east,P0,Antigravity,EAST,1,16x32,0,n/a,"8,31 (bottom centre)",no input,PRODUCTION-READY,Approved Concept C 1-frame idle east. Profile hair bun and slate chest wrap.
+ANIM-PLAYER-WALK-EAST,CHAR-PLAYER-001,Player walk east,P0,Antigravity,EAST,4,16x32,8,loop,"8,31",movement input,PRODUCTION-READY,"Approved Concept C 4-frame walk east. Also includes dedicated west walk in 4-dir atlas."
 ANIM-GHOST-WALK-EAST,CHAR-ITERATION-GHOST-001,Ghost walk east,P0,OmniRush,EAST,4,16x32,8,loop,"8,31",echo vignette path,IMPLEMENTED-PLACEHOLDER,Same timing as player so a replay of the player path matches.
 ANIM-GHOST-KNEEL,CHAR-ITERATION-KNEEL-001,Ghost kneel at plate,P0,OmniRush,S,1,16x32,0,hold,"8,31",opening + locker echo,IMPLEMENTED-PLACEHOLDER,
 ANIM-PLAYER-EXAMINE,CHAR-PLAYER-001,Examine/interact,P1,OmniRush,"S,N,E",3,16x32,8,once,"8,31",E pressed on object,MISSING,Hands out then back; optional.
