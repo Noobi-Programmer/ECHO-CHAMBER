@@ -25,6 +25,7 @@ class AudioDirector {
   ambFilter!: BiquadFilterNode;
   sfxBus!: GainNode;
   bgmBus!: GainNode;
+  voiceBus!: GainNode;
   delay!: DelayNode;
   muted = false;
 
@@ -35,6 +36,7 @@ class AudioDirector {
   // Sample playback cache & state
   private buffers = new Map<string, AudioBuffer>();
   private activeBgm?: { source: AudioBufferSourceNode; gain: GainNode; track: BgmTrack };
+  private activeVoice?: { source: AudioBufferSourceNode; gain: GainNode };
   private activeLoops = new Map<string, { source: AudioBufferSourceNode; gain: GainNode }>();
 
   start() {
@@ -55,6 +57,10 @@ class AudioDirector {
     this.bgmBus = ctx.createGain();
     this.bgmBus.gain.value = 0.45;
     this.bgmBus.connect(this.master);
+
+    this.voiceBus = ctx.createGain();
+    this.voiceBus.gain.value = 1.0;
+    this.voiceBus.connect(this.master);
 
     // simple echo send for motif/voice-ish cues
     this.delay = ctx.createDelay(1);
@@ -100,18 +106,42 @@ class AudioDirector {
   // --- Sample Asset Loading & Playback ---
 
   private async loadSample(filename: string): Promise<AudioBuffer | null> {
+    if (!this.ctx) this.start();
     if (!this.ctx) return null;
     if (this.buffers.has(filename)) return this.buffers.get(filename)!;
-    try {
-      const resp = await fetch(`/assets/audio/${filename}`);
-      if (!resp.ok) return null;
-      const ab = await resp.arrayBuffer();
-      const buf = await this.ctx.decodeAudioData(ab);
-      this.buffers.set(filename, buf);
-      return buf;
-    } catch {
-      return null;
+
+    const base = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) || './';
+    const cleanBase = base.endsWith('/') ? base : base + '/';
+    const paths = [
+      `${cleanBase}assets/audio/${filename}`,
+      `/assets/audio/${filename}`,
+      `assets/audio/${filename}`,
+      `${cleanBase}assets/audio/voice-overs/${filename}`,
+      `/assets/audio/voice-overs/${filename}`,
+      `assets/audio/voice-overs/${filename}`,
+      `${cleanBase}public/assets/audio/${filename}`,
+      `/public/assets/audio/${filename}`,
+      `public/assets/audio/${filename}`,
+      `${cleanBase}assets/audio/sound-effects/${filename}`,
+      `/assets/audio/sound-effects/${filename}`,
+      `assets/audio/sound-effects/${filename}`,
+    ];
+
+    for (const p of paths) {
+      try {
+        const resp = await fetch(p);
+        if (resp.ok) {
+          const ab = await resp.arrayBuffer();
+          const buf = await this.ctx.decodeAudioData(ab);
+          this.buffers.set(filename, buf);
+          return buf;
+        }
+      } catch {
+        // try next path
+      }
     }
+    console.warn(`[Audio] Asset missing from assets/audio: ${filename}`);
+    return null;
   }
 
   private preloadAll() {
@@ -150,9 +180,71 @@ class AudioDirector {
       'bgm-end-cycle-01.ogg',
       'bgm-end-yourname-01.ogg',
       'bgm-credits-01.ogg',
+      'vo-mira-rec03.ogg',
+      'vo-voss-rec04.ogg',
+      'vo-voss-rec01.ogg',
+      'vo-mira-rec05.ogg',
+      'vo-iter-open-01.ogg',
+      'vo-iter-locker.ogg',
+      'vo-iter-no.ogg',
     ];
     for (const f of files) {
       void this.loadSample(f);
+    }
+  }
+
+  playVoice(filename: string, vol = 1.0): Promise<void> {
+    if (!this.ctx) this.start();
+    if (this.ctx && this.ctx.state === 'suspended') {
+      void this.ctx.resume();
+    }
+    this.stopVoice();
+    if (!this.ctx || this.muted) return Promise.resolve();
+
+    const playBuf = (buf: AudioBuffer): Promise<void> => {
+      return new Promise<void>((resolve) => {
+        if (!this.ctx) { resolve(); return; }
+        const src = this.ctx.createBufferSource();
+        src.buffer = buf;
+        const g = this.ctx.createGain();
+        g.gain.value = vol;
+        src.connect(g);
+        g.connect(this.voiceBus);
+        this.activeVoice = { source: src, gain: g };
+        src.onended = () => {
+          if (this.activeVoice?.source === src) {
+            this.activeVoice = undefined;
+          }
+          resolve();
+        };
+        try {
+          src.start();
+        } catch {
+          resolve();
+        }
+      });
+    };
+
+    const cached = this.buffers.get(filename);
+    if (cached) {
+      return playBuf(cached);
+    }
+
+    return this.loadSample(filename).then((loaded) => {
+      if (!loaded) return;
+      return playBuf(loaded);
+    });
+  }
+
+  stopVoice() {
+    if (this.activeVoice) {
+      try {
+        this.activeVoice.source.stop();
+        this.activeVoice.source.disconnect();
+      } catch {
+        // ignore
+      }
+      this.activeVoice = undefined;
     }
   }
 

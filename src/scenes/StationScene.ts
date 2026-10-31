@@ -1,8 +1,10 @@
 import Phaser from 'phaser';
 import { generateTextures } from '../art/textures';
+import { preloadCharacterSprites } from '../art/characterSprites';
 import { buildGrid, DOORS, MAP_H, MAP_W, roomAt, RoomId, TILE } from '../world/map';
 import { audio } from '../systems/audio';
 import { ui, wait } from '../systems/ui';
+import { saveSystem, EchoSaveV1 } from '../systems/save';
 import { ENDINGS, FRAGMENTS, FRAG_ERRORS, LOG, REC, SRC, T } from '../data/story';
 
 // ----------------------------------------------------------------- types
@@ -71,10 +73,15 @@ export class StationScene extends Phaser.Scene {
   idleClock = 0;
   nudges = new Set<string>();
   qaAsked = new Set<string>();
+  lastSaveClock = 0;
 
   constructor() { super('Station'); }
 
   // ================================================================= build
+  preload() {
+    preloadCharacterSprites(this);
+  }
+
   create() {
     generateTextures(this);
     this.grid = buildGrid();
@@ -179,6 +186,22 @@ export class StationScene extends Phaser.Scene {
     this.echoSpots.push({ x: 292, y: 430, label: () => SRC.MIRA + ' · the mug' });
     this.light(296, 424, 26, 0.45, 0xe0a64a);
 
+    // subtle rising steam in ECHO mode
+    const steamGfx = this.add.graphics().setDepth(437);
+    this.time.addEvent({
+      delay: 80,
+      loop: true,
+      callback: () => {
+        steamGfx.clear();
+        if (this.echoT > 0.05) {
+          const t = this.time.now / 350;
+          steamGfx.fillStyle(0xdffaff, 0.25 * this.echoT);
+          steamGfx.fillCircle(291 + Math.sin(t) * 1.5, 417 - (t % 8), 1.2);
+          steamGfx.fillCircle(293 - Math.sin(t * 1.2) * 1.5, 413 - ((t + 4) % 8), 1.6);
+        }
+      },
+    });
+
     // Mira's locker
     this.props.locker = this.img('locker', 334, 436);
     this.solid(327, 424, 14, 12);
@@ -208,7 +231,8 @@ export class StationScene extends Phaser.Scene {
       [1800, 220, 474, 'ghost_side_0'],
       [2200, 186, 478, 'ghost_side_1'],
       [2400, 184, 480, 'ghost_kneel'],
-      [3500, 184, 480, 'ghost_kneel'],
+      [2800, 184, 480, 'ghost_card'],
+      [3200, 184, 480, 'ghost_lookup'],
       [3600, 184, 480, 'ghost_down_0'],
       [4300, 184, 480, 'ghost_up_0'],
     ];
@@ -236,7 +260,14 @@ export class StationScene extends Phaser.Scene {
     this.echoImg('dots_echo', 144, 208, -58);
     this.props.myDot = this.img('my_dot', 160, 186, -57).setVisible(false);
     this.interact('window', 144, 222, () => 'Look out of the window', 30);
-    this.light(144, 196, 90, 0.85, 0x4fb8c8);
+    const stormLight = this.light(144, 196, 90, 0.85, 0x4fb8c8);
+    this.time.addEvent({
+      delay: 120,
+      loop: true,
+      callback: () => {
+        stormLight.x = 144 + Math.sin(this.time.now / 2200) * 3;
+      },
+    });
     this.echoSpots.push({ x: 144, y: 220, label: () => SRC.MIRA + ' · the storm' });
     // storm ritual vignette (Mira: faceless — it's her memory; Voss has a face)
     const mira = this.ghost('mira_up_0');
@@ -500,29 +531,54 @@ export class StationScene extends Phaser.Scene {
       if (k.S.isDown || k.DOWN.isDown) vy += 1;
     }
     const moving = vx !== 0 || vy !== 0;
+    const isRunning = Boolean(k.SHIFT && k.SHIFT.isDown);
+    const stepRate = isRunning ? 100 : 135;
     if (moving) {
       const len = Math.hypot(vx, vy);
-      const isRunning = Boolean(k.SHIFT && k.SHIFT.isDown);
       const runMult = isRunning ? 1.45 : 1;
-      const sp = SPEED * (this.echoT > 0.5 ? 0.75 : runMult) * dt / 1000;
+      const sp = SPEED * (this.echoT > 0.5 ? 0.75 : runMult) * (dt / 1000);
       const nx = this.player.x + (vx / len) * sp;
       const ny = this.player.y + (vy / len) * sp;
       if (!this.blocked(nx, this.player.y)) this.player.x = nx;
       if (!this.blocked(this.player.x, ny)) this.player.y = ny;
-      if (Math.abs(vx) > 0) { this.dir = 'side'; this.flip = vx < 0; }
-      if (vy !== 0 && vx === 0) this.dir = vy < 0 ? 'up' : 'down';
-      const stepRate = isRunning ? 120 : 170;
-      const oldFrame = Math.floor(this.walkClock / stepRate) % 2;
+      if (Math.abs(vx) > 0) { this.dir = "side"; this.flip = vx < 0; }
+      if (vy !== 0 && vx === 0) this.dir = vy < 0 ? "up" : "down";
+      const oldFrame = Math.floor(this.walkClock / stepRate) % 4;
       this.walkClock += dt;
-      const newFrame = Math.floor(this.walkClock / stepRate) % 2;
-      if (newFrame !== oldFrame && newFrame === 1) audio.footstep();
+      const newFrame = Math.floor(this.walkClock / stepRate) % 4;
+      if (newFrame !== oldFrame && (newFrame === 1 || newFrame === 3)) audio.footstep();
+      if (this.step !== 'intro' && this.step !== 'wake' && this.step !== 'ending') {
+        this.lastSaveClock += dt;
+        if (this.lastSaveClock >= 4000) {
+          this.lastSaveClock = 0;
+          this.autosave();
+        }
+      }
+
       this.idleClock = 0;
     } else {
       this.walkClock = 0;
       this.idleClock += dt;
     }
-    const frame = moving ? Math.floor(this.walkClock / 170) % 2 : 0;
-    this.player.setTexture(`p_${this.dir}_${frame}`).setFlipX(this.dir === 'side' && this.flip);
+    if (this.echoActive && !moving) {
+      const echoFr = Math.floor(this.time.now / 240) % 2;
+      this.player.setTexture(`p_echo_idle_${echoFr}`).setFlipX(false);
+    } else if (moving) {
+      const frame = (Math.floor(this.walkClock / stepRate) % 4) + 1;
+      if (this.dir === "side") {
+        const sideDir = this.flip ? "west" : "east";
+        this.player.setTexture(`p_${sideDir}_${frame}`).setFlipX(false);
+      } else {
+        this.player.setTexture(`p_${this.dir}_${frame}`).setFlipX(false);
+      }
+    } else {
+      if (this.dir === "side") {
+        const sideDir = this.flip ? "west" : "east";
+        this.player.setTexture(`p_${sideDir}_0`).setFlipX(false);
+      } else {
+        this.player.setTexture(`p_${this.dir}_0`).setFlipX(false);
+      }
+    }
     this.player.setDepth(this.player.y);
     this.lamps[0].x = this.player.x; this.lamps[0].y = this.player.y - 8;
 
@@ -626,7 +682,97 @@ export class StationScene extends Phaser.Scene {
   }
 
   // =============================================================== story
-  async begin() {
+  autosave() {
+    if (this.busy || ui.isModal() || this.step === 'intro' || this.step === 'wake' || this.step === 'ending') return;
+    const currentStep = (['card', 'lab', 'core', 'final'].includes(this.step) ? this.step : 'card') as 'card' | 'lab' | 'core' | 'final';
+    saveSystem.saveGame({
+      step: currentStep,
+      player: { x: this.player.x, y: this.player.y },
+      flags: [...this.f],
+      recallN: this.recallN,
+      qaAsked: [...this.qaAsked],
+      samples: this.samples,
+    });
+  }
+
+  async restore(save: EchoSaveV1) {
+    this.step = save.step;
+    this.f = new Set(save.flags.filter((fl) => !fl.startsWith('l_')));
+    this.recallN = save.recallN;
+    this.qaAsked = new Set(save.qaAsked);
+    this.samples = (save.samples || []).map((s) => ({ ...s }));
+
+    // Player position and sprite
+    this.player.setPosition(save.player.x, save.player.y);
+    this.player.setTexture('p_down_0');
+    this.player.setVisible(true);
+    this.player.setAlpha(1);
+
+    // Camera
+    const cam = this.cameras.main;
+    cam.centerOn(save.player.x, save.player.y);
+    cam.startFollow(this.player, true, 0.12, 0.12);
+
+    // Restore world objects based on flags
+    if (this.has('lockerOpen') && this.props.locker) {
+      this.props.locker.setTexture('locker_open');
+    }
+    if (this.has('cardTaken')) {
+      if (this.props.plate3) this.props.plate3.setTexture('plate_open');
+      if (this.props.card) this.props.card.setVisible(false);
+    }
+    if (this.has('labOpen')) {
+      if (this.props.readerLab) this.props.readerLab.setTexture('reader_green');
+      if (this.props.doorLab) this.props.doorLab.setTexture('door_lab_open');
+      this.openDoor('door_lab');
+    }
+    if (this.has('photoSeen')) {
+      if (this.props.photo) this.props.photo.setTexture('photo_up');
+      if (this.props.photoEcho) (this.props.photoEcho as Phaser.GameObjects.Image).setVisible(true);
+    }
+    if (this.has('marked')) {
+      if (this.props.myDot) this.props.myDot.setVisible(true);
+    }
+    if (this.has('coreOpen')) {
+      if (this.props.doorCore) this.props.doorCore.setTexture('door_core_open');
+      this.openDoor('door_core');
+    }
+    if (this.has('reflection') || this.has('letheOpen')) {
+      if (this.props.well) this.props.well.setTexture('well_dark');
+      if (this.props.letheGlass) this.props.letheGlass.setVisible(false);
+    }
+
+    // Audio setup according to step/room
+    audio.start();
+    if (save.step === 'core' || save.step === 'final') {
+      audio.playBGM(save.step === 'final' ? 'decision' : 'well');
+      audio.room('core');
+    } else if (save.step === 'lab') {
+      audio.playBGM('station');
+      audio.room('lab');
+    } else {
+      audio.ambience(true);
+      audio.room('cradle');
+    }
+
+    this.echoT = 0;
+    this.echoActive = false;
+    this.echoForced = null;
+    this.busy = false;
+    ui.showHud(true);
+    ui.recall(this.recallN);
+    await ui.fadeTo(0, 600);
+    ui.toast(`CYCLE 17 RESTORED · RECALL ${this.recallN}%`, 2500);
+  }
+
+  async begin(mode: 'new' | 'continue' = 'new') {
+    if (mode === 'continue') {
+      const save = saveSystem.getSave();
+      if (save) {
+        await this.restore(save);
+        return;
+      }
+    }
     this.setStep('intro');
     await ui.fadeTo(1, 10);
     // cold open: a memory, already in ECHO
@@ -662,6 +808,14 @@ export class StationScene extends Phaser.Scene {
     audio.room('cradle');
     this.player.setVisible(true);
     this.player.setPosition(122, 452);
+    this.player.setTexture('p_cradle_wake_0');
+    this.cameras.main.startFollow(this.player, true, 0.12, 0.12);
+    for (let i = 1; i <= 4; i++) {
+      await wait(160);
+      this.player.setTexture(`p_cradle_wake_${i}`);
+    }
+    await wait(200);
+    this.player.setTexture('p_down_0');
     this.cameras.main.startFollow(this.player, true, 0.12, 0.12);
     await ui.fadeTo(0, 1600);
     ui.showHud(true);
@@ -679,6 +833,7 @@ export class StationScene extends Phaser.Scene {
     for (const l of T.orphWakeAfter) await ui.orpheus(l, 1200);
     this.setStep('card');
     ui.recall(3);
+    this.autosave();
     // nudge ECHO via ORPHEUS (it is allowed to encourage ECHO, not to guide)
     this.time.delayedCall(9000, () => { if (this.echoUses === 0) { void ui.orpheus(T.orphEchoTut, 3500); ui.hint('Hold <kbd>Q</kbd> — ECHO'); } });
   }
@@ -688,44 +843,164 @@ export class StationScene extends Phaser.Scene {
     ui.hint(null);
   }
 
+  private async scanLocker() {
+    const laser = this.add.graphics();
+    laser.setDepth(650);
+    audio.contestedTick();
+    for (let y = 422; y <= 436; y += 2) {
+      laser.clear();
+      laser.lineStyle(2, 0x62d6d8, 0.9);
+      laser.lineBetween(330, y, 338, y);
+      await wait(35);
+    }
+    laser.clear();
+    laser.fillStyle(0x62d6d8, 0.45);
+    laser.fillRect(330, 424, 8, 12);
+    await wait(90);
+    laser.destroy();
+  }
+
+  private async liftPlate3() {
+    audio.plate();
+    this.tweens.add({ targets: this.props.plate3, y: 468, duration: 220, ease: 'Power2' });
+    await wait(180);
+    this.props.plate3.setTexture('plate_open');
+    this.props.card.setVisible(true).setPosition(178, 474);
+    this.tweens.add({ targets: this.props.card, x: 188, duration: 260, ease: 'Cubic.out' });
+    await wait(280);
+    this.props.card.setVisible(false);
+  }
+
+  private async openLabDoorSequence() {
+    audio.cardPickup();
+    this.props.readerLab.setTint(0xe0a64a);
+    await wait(240);
+    audio.confirm();
+    this.props.readerLab.clearTint().setTexture('reader_green');
+    await wait(250);
+    audio.door();
+    this.tweens.add({
+      targets: this.props.doorLab,
+      alpha: 0.1,
+      duration: 250,
+      onComplete: () => {
+        this.props.doorLab.setTexture('door_lab_open').setAlpha(1);
+      },
+    });
+    this.openDoor('door_lab');
+    this.set('labOpen');
+    this.autosave();
+  }
+
   private async onInteract(id: string) {
     audio.blip();
     const echo = this.echoT > 0.5;
     switch (id) {
       // ---------------- cradle bay
       case 'cradle':
-        if (echo) { await ui.say(T.cradleEcho, SRC.MULTI); break; }
-        await ui.say(this.has('cradleSeen') ? T.cradle2 : T.cradle1);
+        await ui.inspect({
+          id: 'cradle',
+          title: 'ASPHODEL // RESEARCH POD — CRADLE',
+          category: 'EQUIPMENT',
+          source: 'ASPHODEL RECOVERY PROTOCOL',
+          initialEcho: echo,
+          present: {
+            description: [this.has('cradleSeen') ? T.cradle2 : T.cradle1],
+            textureKey: 'cradle',
+            badge: 'CYCLE 17 · WEAVE COMPLETE · ANCHOR STABLE',
+            placeholderNote: 'Medical stasis pod with warm nutrient gel reservoir.',
+          },
+          echo: {
+            description: [T.cradleEcho],
+            textureKey: 'tally',
+            source: SRC.MULTI,
+            badge: '16 ANOMALOUS TALLY MARKS',
+            placeholderNote: 'Interior rim with 16 scratches in four groups of four.',
+          },
+        });
         this.set('cradleSeen');
         break;
       case 'vossPod':
-        await ui.say(this.has('podSeen') ? T.pod2 : T.pod1);
+        await ui.inspect({
+          id: 'vossPod',
+          title: 'CRYOGENIC CHAMBER // E. VOSS',
+          category: 'EQUIPMENT',
+          source: 'STATION ROSTER · CHIEF RESEARCHER',
+          present: {
+            description: [this.has('podSeen') ? T.pod2 : T.pod1],
+            textureKey: 'voss_pod',
+            badge: 'SUBJECT STATUS: HOLD · VITALS ACTIVE',
+            placeholderNote: 'Frosted cryopod with faint vitals monitor trace.',
+          },
+        });
         this.set('podSeen');
         break;
       case 'mug':
-        if (echo) { await ui.say(T.mugEcho, SRC.MIRA); break; }
-        await ui.say(T.mug1);
-        await ui.say(T.mug2);
+        await ui.inspect({
+          id: 'mug',
+          title: 'CERAMIC COFFEE MUG // M. SEN',
+          category: 'PERSONAL',
+          source: SRC.MIRA,
+          initialEcho: echo,
+          present: {
+            description: [T.mug1, T.mug2],
+            textureKey: 'mug',
+            badge: 'GLUED HANDLE · DUAL FRACTURES',
+            placeholderNote: 'Standard ceramic mug with glued porcelain fracture lines.',
+          },
+          echo: {
+            description: [T.mugEcho],
+            textureKey: 'mug_echo',
+            source: SRC.MIRA,
+            badge: 'INTACT // GREASE PENCIL SMILEY',
+            placeholderNote: 'Steaming mug with grease-pencil smiley on side.',
+          },
+        });
         if (this.echoUses === 0) { void ui.orpheus(T.orphEchoTut, 3500); ui.hint('Hold <kbd>Q</kbd> near the mug'); }
         break;
       case 'terminal': {
         ui.recall(this.recallN);
-        const opts = T.qa.filter((q) => !this.qaAsked.has(q.id)).map((q) => ({ id: q.id, label: q.q }));
-        const pick = await ui.choose(`ASPHODEL · CRADLE TERMINAL — SUBJECT RECALL ${this.recallN}%`, [...opts, { id: 'x', label: 'Step away' }]);
-        const qa = T.qa.find((q) => q.id === pick);
-        if (qa) { this.qaAsked.add(qa.id); await ui.orpheus(qa.a, 2200); }
+        const remainingQa = T.qa.filter((q) => !this.qaAsked.has(q.id));
+        await ui.crtMenu({
+          title: 'ASPHODEL // CRADLE TERMINAL',
+          systemTag: `STATION DIRECTIVE NODE 01 · SUBJECT RECALL ${this.recallN}%`,
+          statusLines: [
+            `SUBJECT STATUS: PATTERN WEAVE 17 ACTIVE`,
+            `LOCAL RECALL RATE: ${this.recallN}% ARCHIVED`,
+            `CRADLE ANCHOR: STABLE // GEL CYCLE 17`,
+          ],
+          menuPrompt: remainingQa.length > 0 ? 'QUERY STATION ARCHIVE // SELECT LOG ENTRY:' : 'ALL RECORDS ARCHIVED // SELECT OPTION:',
+          items: T.qa.map((q) => ({
+            id: q.id,
+            label: q.q,
+            response: q.a,
+            status: this.qaAsked.has(q.id) ? 'ARCHIVED' : 'RESTORED RECORD',
+          })),
+          onSelect: (id) => {
+            this.qaAsked.add(id);
+          },
+        });
         break;
       }
       case 'locker':
         if (echo && this.has('lockerOpen')) { await ui.say(T.lockerEcho, SRC.UNREG); break; }
         if (!this.has('lockerOpen')) {
-          await ui.say(T.locker1);
-          await ui.say(T.locker2);
+          await this.scanLocker();
           audio.lockerOpen();
           this.props.locker.setTexture('locker_open');
           this.set('lockerOpen');
           this.lockerAt = this.time.now;
-          await ui.say(T.locker3);
+          await ui.inspect({
+            id: 'locker',
+            title: 'LOCKER // M. SEN',
+            category: 'PERSONAL',
+            source: 'ASPHODEL PERSONNEL · LAB QUARTERS',
+            present: {
+              description: [T.locker1, T.locker2, T.locker3],
+              badge: 'PALM SCAN ACCEPTED // M. SEN',
+              placeholderNote: 'Locker interior: lab jacket, empty lanyard, dust rectangle.',
+            },
+          });
           void ui.orpheus(T.orphCardGone, 2000);
           this.recall(14);
         } else if (!this.has('recognised')) {
@@ -739,27 +1014,28 @@ export class StationScene extends Phaser.Scene {
         break;
       case 'plate3':
         if (!this.has('seenLockerEcho')) { await ui.say(T.plate); break; }
-        audio.plate();
-        this.props.plate3.setTexture('plate_open');
-        this.props.card.setVisible(true);
-        await ui.say(T.plate3);
-        await ui.say(T.plate3b);
-        this.props.card.setVisible(false);
+        await this.liftPlate3();
+        await ui.inspect({
+          id: 'card',
+          title: 'SECURITY KEYCARD // DR. MIRA SEN',
+          category: 'EVIDENCE',
+          source: 'DECK PLATE 03 SUB-FLOOR RECESS',
+          present: {
+            description: [T.plate3, T.plate3b],
+            badge: 'LEVEL 2 LAB ACCESS · KNOTTED GOWN SCRAP',
+            placeholderNote: 'Magnetic access card with knotted pale gown bookmark.',
+          },
+        });
         this.set('cardTaken');
         ui.toast('LAB CARD · M. SEN', 2200);
         audio.cardPickup();
         for (const l of T.orphCardFound) await ui.orpheus(l, 900);
         this.recall(14);
+        this.autosave();
         break;
       case 'doorLab':
         if (this.has('cardTaken')) {
-          audio.confirm();
-          this.props.readerLab.setTexture('reader_green');
-          await wait(300);
-          audio.door();
-          this.props.doorLab.setTexture('door_lab_open');
-          this.openDoor('door_lab');
-          this.set('labOpen');
+          await this.openLabDoorSequence();
         } else {
           audio.doorLocked();
           await ui.say(T.labDoor);
@@ -772,9 +1048,39 @@ export class StationScene extends Phaser.Scene {
 
       // ---------------- lab
       case 'window':
-        if (echo) { await ui.say(T.windowEcho, SRC.MULTI); break; }
-        await ui.say(T.window1);
-        await ui.say(T.window2);
+        if (echo) {
+          await ui.inspect({
+            id: 'window',
+            title: 'OBSERVATION PORT // THE ICE GIANT (ECHO)',
+            category: 'ENVIRONMENT',
+            source: SRC.MULTI,
+            initialEcho: true,
+            present: { description: [T.window1, T.window2] },
+            echo: {
+              description: [T.windowEcho],
+              source: SRC.MULTI,
+              badge: '16 ANOMALOUS GREASE-PENCIL MARKS',
+              placeholderNote: 'Panoramic view of atmospheric storm with spiral grease-pencil trail.',
+            },
+          });
+          break;
+        }
+        await ui.inspect({
+          id: 'window',
+          title: 'OBSERVATION PORT // THE ICE GIANT',
+          category: 'ENVIRONMENT',
+          source: 'OBSERVATION LAB BULKHEAD',
+          present: {
+            description: [T.window1, T.window2],
+            badge: 'DEEP ATMOSPHERE CYCLONE · SPIRAL TRAIL 1251',
+            placeholderNote: 'Massive azure ice giant filling glass viewport with dark bruised storm.',
+          },
+          echo: {
+            description: [T.windowEcho],
+            source: SRC.MULTI,
+            badge: '16 ANOMALOUS GREASE-PENCIL MARKS',
+          },
+        });
         if (this.has('seenStorm') && !this.has('marked')) {
           await ui.say(T.markAsk);
           const c = await ui.choose('Mark the storm?', [{ id: 'y', label: 'Add a dot where the storm is today' }, { id: 'n', label: 'Leave it' }]);
@@ -783,43 +1089,118 @@ export class StationScene extends Phaser.Scene {
             this.props.myDot.setVisible(true);
             await ui.say(T.markDone);
             void ui.orpheus('Noted.', 1400);
+            this.autosave();
           }
         }
         break;
       case 'wallRule':
-        await ui.say(T.wallRule);
+        await ui.inspect({
+          id: 'wallRule',
+          title: 'STENCILLED DIRECTIVE // BULKHEAD 4',
+          category: 'RESTRICTED',
+          source: 'STATION MEMORY PRINCIPLE',
+          present: {
+            description: [T.wallRule],
+            badge: 'UNDERLINED TWICE BY HAND',
+            placeholderNote: 'High-contrast stencil: A MEMORY YOU CAN EDIT IS NOT EVIDENCE.',
+          },
+        });
         this.set('ruleSeen');
         break;
       case 'keySlot':
-        await ui.say(T.keySlot);
+        await ui.inspect({
+          id: 'keySlot',
+          title: 'LETHE KEY INTERLOCK // HOUSING',
+          category: 'EVIDENCE',
+          source: 'ECHO OVERSIGHT CONSOLE',
+          present: {
+            description: [T.keySlot],
+            badge: 'SNAPPED SHAFT DETECTED',
+            placeholderNote: 'Close-up of red console slot with snapped brass/alloy key shaft.',
+          },
+        });
         if (!this.has('slotSeen')) { this.set('slotSeen'); ui.toast('EVIDENCE · SNAPPED KEY', 2000); }
         break;
       case 'console':
         await this.consoleInteract(echo);
         break;
       case 'photo':
-        if (echo && this.has('photoSeen')) { await ui.say(T.photoEcho, SRC.MIRA); break; }
-        await ui.say(T.photo1);
+        await ui.inspect({
+          id: 'photo',
+          title: 'PHOTOGRAPH // M. SEN & E. VOSS',
+          category: 'PERSONAL',
+          source: SRC.MIRA,
+          initialEcho: echo && this.has('photoSeen'),
+          present: {
+            description: [T.photo1, T.photo2, T.photo3],
+            textureKey: 'photo',
+            badge: 'SCRATCHED WOMAN\'S FACE · "SHE IS NOT YOU"',
+            placeholderNote: 'Polaroid photograph: two researchers standing at observation port.',
+          },
+          echo: {
+            description: [T.photoEcho],
+            textureKey: 'photo',
+            source: SRC.MIRA,
+            badge: 'RESTORED FACE // MIRA SEN',
+            placeholderNote: 'Intact photograph: Dr. Sen with short dark hair and crooked smile.',
+          },
+        });
         this.props.photo.setTexture('photo_up');
         (this.props.photoEcho as Phaser.GameObjects.Image).setVisible(true);
-        await ui.say(T.photo2);
-        await ui.say(T.photo3);
-        if (!this.has('photoSeen')) { this.set('photoSeen'); ui.hint('A memory of the photograph might still be intact. Hold <kbd>Q</kbd> near it.'); this.time.delayedCall(6000, () => ui.hint(null)); }
+        if (!this.has('photoSeen')) {
+          this.set('photoSeen');
+          ui.hint('A memory of the photograph might still be intact. Hold <kbd>Q</kbd> near it.');
+          this.time.delayedCall(6000, () => ui.hint(null));
+        }
         break;
       case 'recorder':
         if (!this.has('corroborated')) {
-          await ui.say(T.recorderSealed);
+          await ui.recorder({
+            id: 'REC_03',
+            tag: REC.rec03.tag,
+            speaker: 'M. SEN',
+            cycle: 'DAY 1253',
+            sealed: true,
+            sealedMessage: 'SEALED // ORPHEUS. By Dr. Voss\'s instruction pending memory corroboration.',
+            lines: [],
+          });
           for (const l of T.orphSealed) await ui.orpheus(l, 1000);
           break;
         }
         await ui.orpheus(T.orphRec03, 900);
-        await ui.sayAll(REC.rec03.lines, REC.rec03.tag);
+        await ui.recorder({
+          id: 'REC_03',
+          tag: REC.rec03.tag,
+          speaker: 'M. SEN',
+          cycle: 'DAY 1253',
+          sealed: false,
+          lines: REC.rec03.lines,
+        });
         this.set('rec03');
         this.recall(63);
         break;
       case 'vossDesk':
-        await ui.say(T.vossDesk);
-        if ((await ui.choose('Play the recorder?', [{ id: 'y', label: 'Play it' }, { id: 'n', label: 'Leave it' }])) === 'y') await ui.sayAll(REC.rec01.lines, REC.rec01.tag);
+        await ui.inspect({
+          id: 'vossDesk',
+          title: 'DESK // E. VOSS',
+          category: 'PERSONAL',
+          source: 'LAB QUARTERS · DESK 02',
+          present: {
+            description: [T.vossDesk],
+            badge: 'GLUE TUBE · 3 SPARE MUG HANDLES · RECORDER',
+            placeholderNote: 'Tidy wooden work desk with cyanoacrylate glue and spare mug handles.',
+          },
+        });
+        if ((await ui.choose('Play the recorder?', [{ id: 'y', label: 'Play it' }, { id: 'n', label: 'Leave it' }])) === 'y') {
+          await ui.recorder({
+            id: 'REC_01',
+            tag: REC.rec01.tag,
+            speaker: 'E. VOSS',
+            cycle: 'DAY 1103',
+            sealed: false,
+            lines: REC.rec01.lines,
+          });
+        }
         break;
       case 'keypad':
         await this.keypadInteract(echo);
@@ -827,20 +1208,62 @@ export class StationScene extends Phaser.Scene {
 
       // ---------------- core
       case 'rec04':
-        await ui.sayAll(REC.rec04.lines, REC.rec04.tag);
+        await ui.recorder({
+          id: 'REC_04',
+          tag: REC.rec04.tag,
+          speaker: 'E. VOSS',
+          cycle: 'DAY 1262',
+          sealed: false,
+          lines: REC.rec04.lines,
+        });
         this.set('rec04');
         break;
       case 'wellConsole':
         if (this.step === 'final') await this.finalConsole();
-        else if (!this.has('continuity')) await this.continuityPuzzle();
-        else await ui.say('The console waits. ' + (this.has('logRead') ? '' : 'The restoration log is available on the terminal.'));
+        else if (!this.has('continuity')) {
+          await ui.inspect({
+            id: 'wellConsole',
+            title: 'THE WELL // ARCHIVE CONSOLE',
+            category: 'EQUIPMENT',
+            source: 'ASPHODEL CORE · ARCHIVE CONSOLE',
+            present: {
+              description: [T.wellConsole],
+              badge: 'RESTORE CONTINUITY // ARCHIVE INTERFACE',
+            },
+          });
+          await this.continuityPuzzle();
+        } else {
+          await ui.inspect({
+            id: 'wellConsole',
+            title: 'THE WELL // ARCHIVE CONSOLE',
+            category: 'EQUIPMENT',
+            source: 'ASPHODEL CORE · ARCHIVE CONSOLE',
+            present: {
+              description: ['The console waits. ' + (this.has('logRead') ? '' : 'The restoration log is available on the terminal.')],
+              badge: 'RESTORE CONTINUITY // COMPLETE',
+            },
+          });
+        }
         break;
       case 'logTerm':
         if (!this.has('continuity')) { await ui.say(T.logTermLocked); break; }
         await this.readLog();
         break;
       case 'lethe':
-        if (!this.has('letheOpen')) { await ui.say(T.letheLocked); break; }
+        if (!this.has('letheOpen')) {
+          await ui.inspect({
+            id: 'lethe',
+            title: 'EMERGENCY PURGE // LETHE INTERLOCK',
+            category: 'RESTRICTED',
+            source: 'ASPHODEL CORE · EMERGENCY SAFEGUARD',
+            present: {
+              description: [T.letheLocked],
+              badge: 'SAFETY GLASS SHIELD SECURED',
+              placeholderNote: 'Heavy red emergency purge lever behind sealed lock glass.',
+            },
+          });
+          break;
+        }
         await this.letheInteract();
         break;
     }
@@ -857,11 +1280,12 @@ export class StationScene extends Phaser.Scene {
     this.setStep('lab');
     this.recall(22);
     audio.playBGM('station');
+    this.autosave();
     const t = this.props.tender as unknown as Phaser.GameObjects.Sprite;
     t.setVisible(true).setPosition(150, 214);
     audio.tenderSkitter();
     let fr = 0;
-    const ev = this.time.addEvent({ delay: 140, loop: true, callback: () => { fr ^= 1; t.setTexture(`tender_${fr}`); } });
+    const ev = this.time.addEvent({ delay: 130, loop: true, callback: () => { fr = (fr + 1) % 4; t.setTexture(`tender_${fr}`); } });
     this.tweens.add({ targets: t, x: 132, duration: 900, yoyo: true, repeat: 1 });
     await wait(1400);
     void ui.orpheus(T.orphTender, 2600);
@@ -903,6 +1327,7 @@ export class StationScene extends Phaser.Scene {
       this.recall(38);
       await ui.say('The seal on Mira\'s memories lifts. The recorder on her desk. The keypad by the Core door.');
       ui.hint(null);
+      this.autosave();
     } else if (m === 'V' && e === 'slot') {
       audio.deny();
       await ui.say(T.corrWrongMemory);
@@ -948,12 +1373,17 @@ export class StationScene extends Phaser.Scene {
     await wait(1000);
     ui.subtitle(T.ghostNo, SRC.UNREG, 1800);
     await wait(1600);
+    g.setTexture('ghost_write');
     const writing = ui.frost("DON'T ANSWER", 10);
     await wait(3100);
     // she dissolves mid-word
     audio.ghostDisappear();
     this.glitch = 1;
-    this.tweens.add({ targets: g, alpha: 0, scaleX: 1.6, scaleY: 0.4, duration: 700 });
+    for (let f = 0; f < 4; f++) {
+      g.setTexture(`ghost_dissolve_${f}`);
+      await wait(140);
+    }
+    this.tweens.add({ targets: g, alpha: 0, scaleX: 1.6, scaleY: 0.4, duration: 350 });
     await writing;
     g.destroy();
     this.echoForced = null;
@@ -963,6 +1393,7 @@ export class StationScene extends Phaser.Scene {
     this.props.doorCore.setTexture('door_core_open');
     this.openDoor('door_core');
     this.set('coreOpen');
+    this.autosave();
     this.dim = 0.35;
     audio.ambience(true, 0.7, 2);
     audio.playBGM('well');
@@ -973,18 +1404,22 @@ export class StationScene extends Phaser.Scene {
   private async enterCore() {
     this.set('enteredCore');
     this.setStep('core');
+    this.autosave();
     await wait(700);
     await ui.orpheus(T.orphCoreTask, 2200);
   }
 
   private async continuityPuzzle() {
-    await ui.say(T.wellConsole);
     const c = await ui.choose('RESTORE CONTINUITY — place the fragments in the order they happened.', [{ id: 'go', label: 'Begin' }, { id: 'x', label: 'Not yet' }]);
     if (c === 'x') return;
     const order: string[] = [];
     while (order.length < 4) {
       const remaining = FRAGMENTS.filter((fr) => !order.includes(fr.id));
-      const pick = await ui.choose(`Slot ${order.length + 1} of 4 — what happened ${order.length === 0 ? 'first' : 'next'}?`, remaining.map((fr) => ({ id: fr.id, label: fr.label })));
+      const pick = await ui.choose(
+        `Slot ${order.length + 1} of 4 — what happened ${order.length === 0 ? 'first' : 'next'}?`,
+        remaining.map((fr) => ({ id: fr.id, label: fr.label })),
+        { current: order.length + 1, total: 4, placed: order }
+      );
       order.push(pick);
       audio.keyTone(order.length - 1);
     }
@@ -1037,6 +1472,7 @@ export class StationScene extends Phaser.Scene {
     await ui.fadeTo(0, 700);
     for (const l of T.orphCont) await ui.orpheus(l, 1200);
     this.recall(94);
+    this.autosave();
     ui.hint('The restoration log is on the terminal.');
     this.time.delayedCall(8000, () => ui.hint(null));
   }
@@ -1053,7 +1489,7 @@ export class StationScene extends Phaser.Scene {
   }
 
   private async readLog() {
-    await ui.terminal(LOG.header, LOG.rows, LOG.footer);
+    await ui.crtLog(LOG.header, LOG.rows, LOG.footer, 'ASPHODEL // RESTORATION PROTOCOL (E. VOSS, DAY 1262)');
     if (this.has('logRead')) return;
     this.set('logRead');
     await ui.say(T.afterLog);
@@ -1071,6 +1507,7 @@ export class StationScene extends Phaser.Scene {
     await ui.orpheus(T.orphLetheAvail, 1600);
     await ui.orpheus(T.orphSpeak, 1600);
     this.setStep('final');
+    this.autosave();
     audio.playBGM('decision');
     ui.hint('Answer at the Well console — or don\'t.');
     audio.startNameLoop(() => { if (this.step === 'final') void ui.orpheus(T.nameQ, 1500); }, 25000);
@@ -1115,6 +1552,7 @@ export class StationScene extends Phaser.Scene {
   // ----------------------------------------------------------- endings
   private finish(e: { title: string; tag: string; lines: string[] }) {
     this.step = 'ending';
+    saveSystem.clearSave();
     audio.stopNameLoop();
     ui.showHud(false);
     ui.hint(null);
@@ -1185,8 +1623,16 @@ export class StationScene extends Phaser.Scene {
     audio.stopNameLoop();
     ui.orpheusClear();
     audio.lever();
+    this.cameras.main.shake(900, 0.012);
+    this.tweens.add({
+      targets: this.props.lethe,
+      y: 46,
+      duration: 160,
+      onComplete: () => {
+        this.props.lethe.setTexture('lethe_pulled');
+      },
+    });
     audio.letheCascade();
-    this.props.lethe.setTexture('lethe_pulled');
     audio.ambience(false, 1, 0.1);
     await wait(3000); // silence
     // cascade: every memory at once

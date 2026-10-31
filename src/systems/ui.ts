@@ -1,5 +1,12 @@
 // DOM overlay UI: crisp text over the pixel canvas. Presentation only — no story logic.
 import { audio } from './audio';
+import { saveSystem } from './save';
+import { InspectionModal } from './interactions/InspectionModal';
+import { CrtTerminal } from './interactions/CrtTerminal';
+import { EvidenceComparison } from './interactions/EvidenceComparison';
+import { AudioRecorderModal } from './interactions/AudioRecorderModal';
+import { PuzzleKeypad } from './interactions/PuzzleKeypad';
+import type { InspectConfig, CrtConfig, RecorderTrack, ContestedMemoryConfig } from './interactions/types';
 
 const ADV_KEYS = new Set(['e', 'E', ' ', 'Enter']);
 const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
@@ -15,6 +22,8 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls: string, parent?:
 export interface ChoiceOption { id: string; label: string; hint?: string }
 export interface EvidenceItem { id: string; name: string; desc: string }
 export interface EvidenceData { recall: number; items: EvidenceItem[] }
+export type { InspectConfig, CrtConfig, RecorderTrack, ContestedMemoryConfig };
+
 
 class UI {
   root!: HTMLElement;
@@ -37,6 +46,12 @@ class UI {
   private helpBtn!: HTMLElement;
   private shortcutsEl!: HTMLElement;
   private inventoryEl!: HTMLElement;
+  private inspectionModal!: InspectionModal;
+  private crtTerminal!: CrtTerminal;
+  private evidenceComparison!: EvidenceComparison;
+  private audioRecorderModal!: AudioRecorderModal;
+  private puzzleKeypad!: PuzzleKeypad;
+
   private evidenceProvider?: () => EvidenceData;
   private modal = 0;
   private orphQueue: Promise<void> = Promise.resolve();
@@ -48,6 +63,11 @@ class UI {
   init(root: HTMLElement) {
     this.root = root;
     root.innerHTML = '';
+    this.inspectionModal = new InspectionModal(root);
+    this.crtTerminal = new CrtTerminal(root);
+    this.evidenceComparison = new EvidenceComparison(root);
+    this.audioRecorderModal = new AudioRecorderModal(root);
+    this.puzzleKeypad = new PuzzleKeypad(root);
     this.orphEl = el('div', 'orph hidden', root, '<div class="orph-name">ORPHEUS</div><div class="orph-wave"><i></i><i></i><i></i><i></i><i></i></div><div class="orph-text"></div>');
     this.orphText = this.orphEl.querySelector('.orph-text')!;
     this.hud = el('div', 'hud hidden', root, '<div class="hud-ring"><div class="hud-fill"></div></div><div class="hud-label">ECHO</div>');
@@ -58,7 +78,7 @@ class UI {
     this.subEl = el('div', 'sub hidden', root);
     this.promptEl = el('div', 'prompt hidden', root);
     this.hintEl = el('div', 'hint hidden', root);
-    this.panel = el('div', 'panel hidden', root, '<div class="panel-tag"></div><div class="panel-text"></div><div class="panel-more">E ▸</div>');
+    this.panel = el('div', 'hidden', root, '<div class="panel-tag"></div><div class="panel-text"></div><div class="panel-more">E ▸</div>');
     this.panelText = this.panel.querySelector('.panel-text')!;
     this.panelTag = this.panel.querySelector('.panel-tag')!;
     this.choiceEl = el('div', 'choices hidden', root);
@@ -283,33 +303,89 @@ class UI {
   }
 
   // ------------------------------------------------------------- title
-  title(onStart: () => void) {
-    const t = el('div', 'title', this.root, `
-      <div class="title-inner">
-        <div class="title-logo">ECHO<span>//</span>CHAMBER</div>
-        <div class="title-tag">A memory can be evidence. It can also be a lie.</div>
-        <button class="title-start">Wake up <kbd>Enter</kbd></button>
-        <div class="title-controls">
-          <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / arrows — move</div>
-          <div><kbd>Shift</kbd> — run</div>
-          <div><kbd>E</kbd> — inspect / continue</div>
-          <div><kbd>Q</kbd> (hold) — ECHO: see what this place remembers</div>
-          <div><kbd>Tab</kbd> — inventory / evidence</div>
-          <div><kbd>?</kbd> — keyboard shortcuts</div>
-          <div><kbd>M</kbd> — mute</div>
+  title(onStart: (mode: 'new' | 'continue') => void) {
+    const render = () => {
+      const saveSummary = saveSystem.getSaveSummary();
+      const hasSave = saveSummary !== null;
+
+      const buttonsHtml = hasSave
+        ? `
+        <div class="title-actions">
+          <button class="title-start title-continue">Continue <kbd>Enter</kbd>
+            <span class="title-save-info">${saveSummary.label} · Recall ${saveSummary.recall}% · ${saveSummary.date}</span>
+          </button>
+          <button class="title-secondary title-newgame">New Cycle</button>
+
         </div>
-        <div class="title-note">Headphones recommended · about 6–8 minutes</div>
-      </div>`);
-    this.fadeTo(0, 600);
-    const go = () => {
-      window.removeEventListener('keydown', onKey);
-      t.classList.add('out');
-      setTimeout(() => t.remove(), 700);
-      onStart();
+        <div class="title-tools">
+          <button class="title-erase">Erase local save</button>
+        </div>`
+        : `
+        <div class="title-actions">
+          <button class="title-start">Wake up <kbd>Enter</kbd></button>
+        </div>`;
+
+      const t = el('div', 'title', this.root, `
+        <div class="title-inner">
+          <div class="title-logo">ECHO<span>//</span>CHAMBER</div>
+          <div class="title-tag">A memory can be evidence. It can also be a lie.</div>
+          ${buttonsHtml}
+          <div class="title-controls">
+            <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / arrows — move</div>
+            <div><kbd>Shift</kbd> — run</div>
+            <div><kbd>E</kbd> — inspect / continue</div>
+            <div><kbd>Q</kbd> (hold) — ECHO: see what this place remembers</div>
+            <div><kbd>Tab</kbd> — inventory / evidence</div>
+            <div><kbd>?</kbd> — keyboard shortcuts</div>
+            <div><kbd>M</kbd> — mute</div>
+          </div>
+          <div class="title-note">Headphones recommended · about 6–8 minutes</div>
+        </div>`);
+
+      this.fadeTo(0, 600);
+
+      const go = (mode: 'new' | 'continue') => {
+        window.removeEventListener('keydown', onKey);
+        t.classList.add('out');
+        setTimeout(() => t.remove(), 700);
+        onStart(mode);
+      };
+
+      const onKey = (e: KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          go(hasSave ? 'continue' : 'new');
+        }
+      };
+      window.addEventListener('keydown', onKey);
+
+      if (hasSave) {
+        const contBtn = t.querySelector('.title-continue') as HTMLButtonElement | null;
+        const newBtn = t.querySelector('.title-newgame') as HTMLButtonElement | null;
+        const eraseBtn = t.querySelector('.title-erase') as HTMLButtonElement | null;
+
+        contBtn?.addEventListener('click', () => go('continue'));
+        newBtn?.addEventListener('click', () => {
+          if (window.confirm('Start a new cycle? Your saved progress on this browser will be reset.')) {
+            saveSystem.clearSave();
+            go('new');
+          }
+        });
+        eraseBtn?.addEventListener('click', () => {
+          if (window.confirm('Erase saved station progress on this browser?')) {
+            saveSystem.clearSave();
+            window.removeEventListener('keydown', onKey);
+            t.remove();
+            render();
+          }
+        });
+      } else {
+        const wakeBtn = t.querySelector('.title-start') as HTMLButtonElement | null;
+        wakeBtn?.addEventListener('click', () => go('new'));
+      }
     };
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } };
-    window.addEventListener('keydown', onKey);
-    t.querySelector('button')!.addEventListener('click', go);
+
+    render();
   }
 
   // ------------------------------------------------------------- ORPHEUS (non-modal)
@@ -342,6 +418,7 @@ class UI {
   // ------------------------------------------------------------- modal inspect panel
   async say(text: string, tag = ''): Promise<void> {
     this.modal++;
+    this.panel.classList.add('panel');
     this.panel.classList.remove('hidden');
     this.panelTag.textContent = tag;
     this.panelTag.style.display = tag ? '' : 'none';
@@ -365,6 +442,7 @@ class UI {
     await advanced;
     window.removeEventListener('keydown', onKey);
     this.panel.removeEventListener('click', onClick);
+    this.panel.classList.remove('panel');
     this.panel.classList.add('hidden');
     audio.blip();
     this.modal--;
@@ -373,10 +451,17 @@ class UI {
   async sayAll(lines: string[], tag = '') { for (const l of lines) await this.say(l, tag); }
 
   // ------------------------------------------------------------- choices
-  choose(prompt: string, options: ChoiceOption[]): Promise<string> {
+  choose(prompt: string, options: ChoiceOption[], tracker?: { current: number; total: number; placed?: string[] }): Promise<string> {
     this.modal++;
     return new Promise((resolve) => {
       this.choiceEl.innerHTML = '';
+      if (tracker) {
+        const tr = el('div', 'timeline-tracker', this.choiceEl);
+        for (let s = 1; s <= tracker.total; s++) {
+          const slot = el('div', `timeline-slot ${s < tracker.current ? 'filled' : s === tracker.current ? 'current' : ''}`, tr);
+          slot.innerHTML = s < tracker.current ? `SLOT ${s} ◈ ${tracker.placed?.[s - 1] ?? 'PLACED'}` : s === tracker.current ? `SLOT ${s} ▸ ACTIVE` : `SLOT ${s}`;
+        }
+      }
       el('div', 'choices-prompt', this.choiceEl).textContent = prompt;
       let idx = 0;
       const btns = options.map((o, i) => {
@@ -411,79 +496,67 @@ class UI {
     });
   }
 
-  // ------------------------------------------------------------- keypad (shape code)
-  keypad(): Promise<string[] | null> {
+  // ------------------------------------------------------------- cinematic object inspection
+  async inspect(config: InspectConfig): Promise<void> {
     this.modal++;
-    return new Promise((resolve) => {
-      const shapes = [
-        { id: 'circle', g: '◯' },
-        { id: 'triangle', g: '△' },
-        { id: 'square', g: '□' },
-        { id: 'diamond', g: '◇' },
-      ];
-      const wrap = el('div', 'keypad', this.root, '<div class="kp-title">THE WELL — AUTHORISED PERSONNEL</div><div class="kp-entry"></div><div class="kp-grid"></div><div class="kp-help"><kbd>1</kbd>–<kbd>4</kbd> or click · <kbd>Esc</kbd> step away</div>');
-      const entry = wrap.querySelector('.kp-entry') as HTMLElement;
-      const grid = wrap.querySelector('.kp-grid') as HTMLElement;
-      const seq: string[] = [];
-      const render = () => { entry.textContent = seq.map((s) => shapes.find((x) => x.id === s)!.g).join('  ') || '·  ·  ·'; };
-      render();
-      const press = (i: number) => {
-        audio.keyTone(i);
-        seq.push(shapes[i].id);
-        render();
-        if (seq.length === 3) { setTimeout(() => finish([...seq]), 350); }
-      };
-      shapes.forEach((s, i) => {
-        const b = el('button', 'kp-btn', grid);
-        b.innerHTML = `<span>${s.g}</span><small>${i + 1}</small>`;
-        b.addEventListener('click', () => press(i));
-      });
-      const opened = performance.now();
-      const onKey = (e: KeyboardEvent) => {
-        if (e.repeat || performance.now() - opened < 200) return;
-        const n = parseInt(e.key, 10);
-        if (n >= 1 && n <= 4 && seq.length < 3) press(n - 1);
-        if (e.key === 'Escape' || e.key === 'Backspace') finish(null);
-      };
-      const finish = (r: string[] | null) => {
-        window.removeEventListener('keydown', onKey);
-        wrap.remove();
-        this.modal--;
-        resolve(r);
-      };
-      window.addEventListener('keydown', onKey);
-    });
+    try {
+      await this.inspectionModal.inspect(config);
+    } finally {
+      this.modal = Math.max(0, this.modal - 1);
+    }
   }
 
-  // ------------------------------------------------------------- terminal log
-  async terminal(header: string[], rows: string[], footer: string): Promise<void> {
+  // ------------------------------------------------------------- unified CRT terminal
+  async crtLog(header: string[], rows: string[], footer: string, title?: string): Promise<void> {
     this.modal++;
-    const wrap = el('div', 'term', this.root, '<pre class="term-text"></pre><div class="term-more hidden">E ▸ close</div>');
-    const pre = wrap.querySelector('.term-text') as HTMLElement;
-    let skip = false;
-    const onSkip = (e: KeyboardEvent) => { if (ADV_KEYS.has(e.key)) skip = true; };
-    window.addEventListener('keydown', onSkip);
-    for (const h of header) { pre.textContent += h + '\n'; await wait(skip ? 0 : 160); audio.type(); }
-    pre.textContent += '\n';
-    for (const r of rows) {
-      pre.textContent += r + '\n';
-      audio.type();
-      await wait(skip ? 0 : 380);
+    try {
+      await this.crtTerminal.openStreamLog(header, rows, footer, title);
+    } finally {
+      this.modal = Math.max(0, this.modal - 1);
     }
-    pre.textContent += '\n' + footer;
-    window.removeEventListener('keydown', onSkip);
-    wrap.querySelector('.term-more')!.classList.remove('hidden');
-    await new Promise<void>((res) => {
-      const opened = performance.now();
-      const k = (e: KeyboardEvent) => {
-        if (e.repeat || !ADV_KEYS.has(e.key) || performance.now() - opened < 400) return;
-        window.removeEventListener('keydown', k); res();
-      };
-      window.addEventListener('keydown', k);
-      wrap.addEventListener('click', () => { window.removeEventListener('keydown', k); res(); });
-    });
-    wrap.remove();
-    this.modal--;
+  }
+
+  async crtMenu(config: CrtConfig): Promise<string> {
+    this.modal++;
+    try {
+      return await this.crtTerminal.openInteractiveMenu(config);
+    } finally {
+      this.modal = Math.max(0, this.modal - 1);
+    }
+  }
+
+  async terminal(header: string[], rows: string[], footer: string): Promise<void> {
+    return this.crtLog(header, rows, footer);
+  }
+
+  // ------------------------------------------------------------- evidence comparison
+  async compareEvidence(config: ContestedMemoryConfig): Promise<{ memoryId: string; evidenceId: string } | null> {
+    this.modal++;
+    try {
+      return await this.evidenceComparison.open(config);
+    } finally {
+      this.modal = Math.max(0, this.modal - 1);
+    }
+  }
+
+  // ------------------------------------------------------------- audio recorder
+  async recorder(track: RecorderTrack): Promise<void> {
+    this.modal++;
+    try {
+      await this.audioRecorderModal.open(track);
+    } finally {
+      this.modal = Math.max(0, this.modal - 1);
+    }
+  }
+
+  // ------------------------------------------------------------- keypad (shape code)
+  async keypad(): Promise<string[] | null> {
+    this.modal++;
+    try {
+      return await this.puzzleKeypad.open();
+    } finally {
+      this.modal = Math.max(0, this.modal - 1);
+    }
   }
 
   // ------------------------------------------------------------- frost writing (CM-05)
@@ -589,4 +662,5 @@ class UI {
 }
 
 export const ui = new UI();
+(window as unknown as { __UI: UI }).__UI = ui;
 export { wait };

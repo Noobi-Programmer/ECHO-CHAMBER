@@ -76,5 +76,5 @@ export interface ContestedMemoryConfig {
   evidenceList: EvidenceOption[];
   correctMemoryId: string;
   correctEvidenceId: string;
-  onCorroborated: () => Promise<void> | void;
+  onCorroborated?: () => Promise<void> | void;
 }
