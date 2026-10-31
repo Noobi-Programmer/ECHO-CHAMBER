@@ -40,12 +40,25 @@ Do not build rooms, lore-heavy dialogue or final art before the story team estab
 
 Nothing is `STORY_LOCK: APPROVED` until Abi explicitly marks it so in `STORY_DECISIONS.md`.
 
-## Install the planning pack into the existing repository
+## Core developer and agent commands
 
-On Windows PowerShell, after extracting this archive:
+```bash
+# Install dependencies
+npm install
 
-```powershell
-.\install-plan.ps1 -RepoPath "C:\path\to\ECHO-CHAMBER"
+# Run the game locally (Vite dev server)
+npm run dev
+
+# Build the game for production
+npm run build
+
+# Preview production build locally
+npm run preview
+
+# Validate planning docs and skills
+npm run plan:validate
+
+# Verify and synchronize agent skills
+npm run skills:check
+npm run skills:sync
 ```
-
-The installer merges directories, preserves application source/public assets/package manifests/lockfiles/.git, and backs up conflicting planning files under `.plan-backup-<timestamp>`. Review the backup and diff before committing. The project-level package manifest is deliberately not replaced; see `package-plan-scripts.json` for optional scripts to merge manually.

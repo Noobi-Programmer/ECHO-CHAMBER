@@ -1,7 +1,0 @@
-{
-  "scripts": {
-    "plan:validate": "node scripts/validate-plan.mjs",
-    "skills:sync": "node scripts/sync-skills.mjs",
-    "skills:check": "node scripts/check-agent-skills.mjs"
-  }
-}
