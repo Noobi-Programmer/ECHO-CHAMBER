@@ -2,6 +2,7 @@
 // props and the room drawn with canvas primitives. No external image assets.
 import Phaser from 'phaser';
 import { buildGrid, MAP_H, MAP_W, TILE } from '../world/map';
+import { sliceCharacterTextures } from './characterSprites';
 
 export const PAL: Record<string, string> = {
   K: '#06080e', // near-black
@@ -639,4 +640,5 @@ export function generateTextures(scene: Phaser.Scene) {
   makeCharacters(scene);
   makeMap(scene);
   makeProps(scene);
+  sliceCharacterTextures(scene);
 }
