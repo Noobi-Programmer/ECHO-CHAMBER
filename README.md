@@ -2,30 +2,33 @@
 
 > **A memory can be evidence. It can also be a lie.**
 
-A GitHub-ready planning pack for a short, cinematic 2D pixel-art psychological sci-fi thriller. This pack separates **the player-experience/story workshop** from **technical and agent-system research**, so several contributors can work in parallel without silently changing the story or colliding in the same files.
+A planning and pre-production repository for a short, cinematic 2D pixel-art psychological sci-fi thriller.
 
 ## Start here
+1. Read `START_HERE.md`.
+2. Every agent follows `AGENT_SYNC.md` before claiming or editing a task.
+3. Read `AGENTS.md` for project rules and `SKILL_DISCOVERY.md` for runtime-native skill discovery.
+4. Story work uses `STORY_WORKSHOP.md`, `STORY_BIBLE.md` and `EXPERIENCE_BLUEPRINT.md`.
+5. Technical work uses `TECHNICAL_RESEARCH_PLAN.md`, `ARCHITECTURE_PROPOSAL.md` and `AGENT_SYSTEM_PLAN.md`.
+6. `TEAM_DISPATCH.md` describes the initial parallel batch; roles remain dynamic.
+7. Canonical project skills live in `.agents/skills/`. They are mirrored into `.claude/skills/` for Claude Code and OmniRush.
 
-1. Read [`START_HERE.md`](START_HERE.md).
-2. Every agent must follow [`AGENT_SYNC.md`](AGENT_SYNC.md) before claiming or editing a task.
-3. The story team works from [`STORY_WORKSHOP.md`](STORY_WORKSHOP.md), [`STORY_BIBLE.md`](STORY_BIBLE.md) and [`EXPERIENCE_BLUEPRINT.md`](EXPERIENCE_BLUEPRINT.md).
-4. The technical team works from [`TECHNICAL_RESEARCH_PLAN.md`](TECHNICAL_RESEARCH_PLAN.md), [`ARCHITECTURE_PROPOSAL.md`](ARCHITECTURE_PROPOSAL.md) and [`AGENT_SYSTEM_PLAN.md`](AGENT_SYSTEM_PLAN.md).
-5. See [`TEAM_DISPATCH.md`](TEAM_DISPATCH.md) for the first parallel work batch.
-6. Skills live canonically in `.agents/skills/`. Use `scripts/sync-skills.mjs` to mirror them into `.claude/skills/` for Claude Code.
-7. The human project lead approves story canon, scope changes and production decisions.
+## Automatic skills
+Agents must inspect the repo's skills, select relevant ones for the current task, and load them automatically. If a needed skill is missing, they may add a focused project skill after reviewing its source, licence, instructions and scripts. See `SKILL_DISCOVERY.md`.
+
+Validate skill setup:
+
+```bash
+node scripts/sync-skills.mjs
+node scripts/check-agent-skills.mjs
+```
+
+## Team and tools (user-provided; re-confirm at session start)
+- **Abi:** OpenCode, Antigravity Pro and OmniRush.
+- **Arpita:** Claude Pro / Claude Code.
+- **Kishore:** Antigravity and OpenCode.
+
+These are available sessions, not permanent jobs. Assign tasks by capability, permissions, context, independent verification, availability and quota.
 
 ## Important status
-
-This is a **planning and pre-production package**, not a completed game implementation. Engine choices and story beats are proposals until verified or approved. It deliberately does not claim that any assets have been downloaded, licences audited, code implemented or browser tests passed.
-
-## Team and tool availability (user-provided; re-confirm at session start)
-
-- **Abi:** OpenCode + Antigravity Pro (Gemini model configured by user) + OmniRush (user-reported 10M allowance).
-- **Arpita:** Claude Pro / Claude Code.
-- **Kishore:** Antigravity + OpenCode.
-
-People and tool seats are known; task roles are **dynamic**. No contributor is permanently the writer, coder, artist or QA person. Route tasks using capability, model fit, context, permissions, remaining quota, availability and independent-verification value.
-
-## Proposed first milestone
-
-Before committing to full implementation, produce an approved story and a proven vertical-slice architecture. The first playable slice should include movement, collision, one room, one interactable clue and a working ECHO past-state reveal.
+This repository is currently a planning and pre-production package, not a claim of completed game implementation. Story and engine choices remain proposals until approved and technically verified.

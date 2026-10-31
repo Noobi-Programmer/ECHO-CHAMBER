@@ -1,33 +1,85 @@
-# Skills Plan — Dynamic and Task-Scoped
+# Skills Plan — Dynamic, Agent-Native and Task-Scoped
 
-## Shared source
+## Current state (verified against repository tree)
+- 19 canonical skills under `.agents/skills/`.
+- 19 matching Claude-compatible mirrors under `.claude/skills/`.
+- The two locations contain the same skill set. `.agents/skills/` is canonical; `.claude/skills/` is generated.
+- There is no need to create a separate Antigravity directory: Antigravity uses `.agents/skills/`.
+- There is no need to duplicate an OpenCode directory: OpenCode discovers `.agents/skills/`.
+- OmniRush's current desktop docs explicitly support workspace `.claude/skills/` and `.opencode/skills/`; this repository uses the `.claude/skills/` mirror so its bundled OpenCode sidecar sees the same library.
 
-Canonical skills: `.agents/skills/<skill-name>/SKILL.md`. Mirror to `.claude/skills/` for Claude Code with `scripts/sync-skills.mjs`. Keep one canonical copy to avoid drift. Each agent verifies skill loading in its own environment; skill discovery may require a new session/reload.
+## Runtime mapping
 
-## Skills catalogue
-
-| Skill | Use when | Key output |
+| Runtime | Skill path | Loading |
 |---|---|---|
-| `story-workshop` | Developing/revising the experience | Treatments, beat sheet, story pitch |
-| `psychological-thriller-writing` | Dialogue, suspense and reveals | Character voice, tension and payoff |
-| `narrative-continuity` | Changing or auditing canon | Timeline, knowledge map, contradiction report |
-| `cinematic-pacing` | Structuring a short playthrough | Beat timing, reveals and quiet beats |
-| `environmental-storytelling` | Designing rooms and props | Visual clue plan and narrative set dressing |
-| `puzzle-design` | Designing/validating puzzles | Clue matrix, solution, hint ladder |
-| `player-experience-review` | Blind review and UX checks | Confusion map, pacing/agency feedback |
-| `engine-evaluation` | Choosing Phaser/Godot/other | Evidence-based decision memo |
-| `phaser-engineering` | Phaser code after engine lock | Small verified implementation |
-| `godot-web-engineering` | Godot only if selected | Scene/scripts/export implementation |
-| `pixel-art-direction` | Art direction and sprite work | Palette, tile/sprite specs, asset reviews |
-| `soundscape-design` | Sound and music direction | Cue sheet and mix priorities |
-| `multi-agent-coordination` | Routing and handoffs | Task cards, state updates, conflict avoidance |
-| `browser-asset-scout` | Searching asset libraries | Candidate shortlist with provenance |
-| `asset-license-audit` | Checking asset rights | Per-asset licence decision |
-| `asset-ingestion` | Validating/importing approved files | Verified asset + register row |
-| `browser-game-qa` | Playing the running build | Reproducible bug reports |
-| `git-parallel-work` | Branch/worktree integration | Safe branch/PR workflow |
-| `performance-accessibility` | Final polish | Performance, input, motion and readability audit |
+| OpenCode | `.agents/skills/` | Native `skill` tool; load the best matching skills on demand |
+| Antigravity | `.agents/skills/` | Autonomous discovery from skill names/descriptions; slash invoke when needed |
+| Claude Code | `.claude/skills/` | Native project skills, selected by task relevance |
+| OmniRush | `.claude/skills/` | OpenCode sidecar; restart/rebuild workspace engine if catalog is cached |
+| Unknown | Verify official docs | Never guess; document exact supported path/format |
 
-## Loading policy
+Full procedure: `SKILL_DISCOVERY.md`.
 
-Load only relevant skills for the current task. A story-writing task should not load engine implementation skills; an asset scout should not need all story dialogue. If two skills conflict, report the conflict and follow source-of-truth docs.
+## Existing canonical skill inventory
+
+| Skill | Use when |
+|---|---|
+| `asset-ingestion` | Importing approved assets into the game |
+| `asset-license-audit` | Verifying reuse rights, attribution and licence conditions |
+| `browser-asset-scout` | Searching permitted sources for art/audio assets |
+| `browser-game-qa` | Testing a playable browser build |
+| `cinematic-pacing` | Planning dramatic beats, reveals and quiet moments |
+| `engine-evaluation` | Comparing game engines before engine lock |
+| `environmental-storytelling` | Communicating narrative through spaces and props |
+| `git-parallel-work` | Managing branches, worktrees and safe integration |
+| `godot-web-engineering` | Implementing Godot Web only if Godot is selected |
+| `multi-agent-coordination` | Routing tasks and coordinating agent handoffs |
+| `narrative-continuity` | Auditing chronology, character knowledge and story consistency |
+| `performance-accessibility` | Reviewing performance, readability, input and motion |
+| `phaser-engineering` | Implementing Phaser only if Phaser is selected |
+| `pixel-art-direction` | Maintaining the pixel-art visual language |
+| `player-experience-review` | Reviewing clarity, agency, pacing and player comprehension |
+| `psychological-thriller-writing` | Writing suspense, dialogue and psychological reveals |
+| `puzzle-design` | Designing fair puzzles, clues and hint ladders |
+| `soundscape-design` | Planning ambience, effects, silence and music |
+| `story-workshop` | Developing and evaluating story treatments |
+
+## Dynamic task-to-skill suggestions
+
+This is guidance, not a fixed role assignment. The agent router chooses based on each task.
+
+| Task | Likely skills |
+|---|---|
+| Story treatments / story bible | `story-workshop`, `psychological-thriller-writing`, `narrative-continuity`, `cinematic-pacing` |
+| Scene and clue design | `environmental-storytelling`, `puzzle-design`, `player-experience-review` |
+| Engine comparison / prototype | `engine-evaluation`, then one of `phaser-engineering` or `godot-web-engineering` only after decision |
+| Pixel art and environment | `pixel-art-direction`, `environmental-storytelling` |
+| Audio research and implementation | `soundscape-design`, `browser-asset-scout`, `asset-license-audit`, `asset-ingestion` |
+| Asset discovery bots | `browser-asset-scout`, `asset-license-audit`, `asset-ingestion` |
+| Agent routing / collaboration | `multi-agent-coordination`, `git-parallel-work` |
+| Browser testing / release | `browser-game-qa`, `performance-accessibility`, `git-parallel-work` |
+
+## Automatic skill policy
+
+1. Each agent identifies its runtime and reads `SKILL_DISCOVERY.md`.
+2. It inspects the skill catalogue and loads the smallest relevant set automatically.
+3. It reports the actual skill IDs loaded.
+4. If a needed skill is missing, it searches first, audits source/compatibility/licence/security, then adds a focused project skill to `.agents/skills/`.
+5. After an addition, run `node scripts/sync-skills.mjs` and `node scripts/check-agent-skills.mjs`.
+6. No blanket bundle installs, no duplicate agent-specific copies, no running unreviewed skill scripts.
+7. Skill changes are task-scoped Git changes and must be reviewed like code.
+
+## External skill provenance register
+
+When adopting a third-party skill, append:
+- skill ID;
+- source repository and exact URL;
+- source commit or version;
+- licence/permission;
+- date reviewed;
+- reviewer;
+- files copied;
+- compatibility tested;
+- security notes.
+
+No third-party skill is considered approved without this record.
