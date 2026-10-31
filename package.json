@@ -10,7 +10,8 @@
     "test:e2e": "node tests/playthrough.mjs",
     "plan:validate": "node scripts/validate-plan.mjs",
     "skills:sync": "node scripts/sync-skills.mjs",
-    "skills:check": "node scripts/check-agent-skills.mjs"
+    "skills:check": "node scripts/check-agent-skills.mjs",
+    "export:itch": "python scripts/export_itch_zip.py"
   },
   "dependencies": {
     "@fontsource/ibm-plex-mono": "5.3.0",
