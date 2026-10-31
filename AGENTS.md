@@ -1,46 +1,17 @@
-# AGENTS.md — ECHO//CHAMBER
+# AGENTS.md — Repository-Wide Rules
 
-## Mission
-Build a complete, short, browser-playable 2D pixel-art psychological thriller prototype for CodeDay. The core loop is: explore a room → activate ECHO to see a past-state overlay → inspect the discrepancy → solve a clue/puzzle → uncover the truth → choose an ending.
-
-## Hard constraints
-- Phaser 4 + TypeScript + Vite; use Bun if available.
-- Browser-first, static deployment. No backend.
-- One playable character, three compact spaces, 8–12 minute core playthrough.
-- ECHO mode must work and matter to the puzzles and story.
-- One timeline puzzle; two endings.
-- No combat, enemies, procedural generation, multiplayer, accounts, database, LLM API, crafting, inventory system, or extra feature creep.
-- Do not change the canonical story in GAME_DESIGN.md without the human project lead's approval.
-- Prefer simple authored state changes over general-purpose systems.
-
-## Narrative canon
-Player is Iteration 017, a reconstruction of Dr. Mira Sen. Dr. Elias Voss overrode Mira's request to shut down ECHO because he could not accept losing her. ORPHEUS follows Voss's preservation instruction. Earlier iterations left clues. The final choice is PRESERVE (continue the loop) or RELEASE (end ECHO).
-
-## Engineering rules
-- Keep code small and readable. Avoid unnecessary architecture.
-- Use deterministic puzzle logic; no external AI calls.
-- Never put story-critical content solely in a hard-to-read visual effect.
-- Ensure keyboard input does not conflict with dialogue or browser shortcuts.
-- Add interaction prompts and soft hints; no softlocks.
-- Preserve integer-aligned pixel rendering; avoid unnecessary scaling/rotation of pixel sprites.
-- Run typecheck/build after each meaningful integration.
-- Do not add dependencies without approval.
-- Do not upgrade Phaser or other packages mid-event.
-
-## File ownership
-- OpenCode is the primary code owner and integration authority.
-- Freebuff may create/edit `src/data/story.ts` and `src/data/puzzleData.ts` only, in a separate worktree, unless the lead assigns another isolated file.
-- Antigravity is QA-first: inspect the running browser build, report bugs and screenshots/steps; do not concurrently refactor core files.
-- Human artist owns the pixel-art assets. Coding agents can use clearly labelled placeholders until assets arrive.
-
-## Definition of done
-1. Fresh browser load succeeds.
-2. Movement, wall collision and interaction work.
-3. ECHO toggles the past-state overlay and reveals at least three meaningful differences.
-4. Puzzles have unambiguous clues and a hint path.
-5. Timeline puzzle reveals Iteration 017.
-6. Both endings play; restart returns to the start.
-7. The project builds cleanly and can be served/deployed as a static site.
-
-## Agent behaviour
-Before editing, inspect the existing project and state the exact files to be changed. Do not assume dependencies or APIs. Make the smallest implementation that passes acceptance criteria. Report changed files, commands run, test/build results, known issues and any manual steps. Never claim a browser test was run unless it actually was.
+1. Read `AGENT_SYNC.md` before every task and before editing.
+2. Read `AGENT_STATUS.md`; claim a READY task before modifying files.
+3. Work in an isolated branch/worktree with exact write-set. No overlapping writers.
+4. Treat `STORY_BIBLE.md` and story docs as draft until Abi approves; do not silently change canon.
+5. Engine is undecided until technical spike evidence is recorded and Abi approves.
+6. Keep first-time player experience and ECHO mechanic above feature count.
+7. Use narrow, task-relevant skills from `.agents/skills/`; do not load every skill automatically.
+8. Never fabricate test, browser, asset or licence verification.
+9. Never download/import an asset before exact licence audit and approval.
+10. Do not scrape, bypass access controls, captchas, paywalls or API limits.
+11. Do not add API keys, secrets, model credentials or personal data to Git.
+12. No agent merges to `main` without the batch's integration captain.
+13. Technical experiments must not overwrite the current runnable baseline or approved story.
+14. Report changed files, commands and outcomes, known issues and follow-ups on handoff.
+15. If a task conflicts with the source-of-truth docs, stop and request a decision.

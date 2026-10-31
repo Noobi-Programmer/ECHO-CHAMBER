@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "plan:validate": "node scripts/validate-plan.mjs",
+    "skills:sync": "node scripts/sync-skills.mjs"
+  }
+}
