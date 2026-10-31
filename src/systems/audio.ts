@@ -1,7 +1,22 @@
-// Original synthesised audio (WebAudio). No sample files.
+// ECHO//CHAMBER Audio System
+// Supports both high-fidelity sample playback (/assets/audio/*.ogg)
+// and procedural WebAudio synthesis fallbacks.
 // Sound only enhances: every essential beat is also communicated in text.
 
 type RoomTone = 'cradle' | 'lab' | 'core';
+export type BgmTrack =
+  | 'title'
+  | 'station'
+  | 'echo'
+  | 'tension'
+  | 'well'
+  | 'reveal'
+  | 'decision'
+  | 'hername'
+  | 'lethe'
+  | 'cycle'
+  | 'yourname'
+  | 'credits';
 
 class AudioDirector {
   ctx: AudioContext | null = null;
@@ -9,11 +24,18 @@ class AudioDirector {
   ambBus!: GainNode;
   ambFilter!: BiquadFilterNode;
   sfxBus!: GainNode;
+  bgmBus!: GainNode;
   delay!: DelayNode;
   muted = false;
+
   private oscA?: OscillatorNode;
   private oscB?: OscillatorNode;
   private nameLoopTimer = 0;
+
+  // Sample playback cache & state
+  private buffers = new Map<string, AudioBuffer>();
+  private activeBgm?: { source: AudioBufferSourceNode; gain: GainNode; track: BgmTrack };
+  private activeLoops = new Map<string, { source: AudioBufferSourceNode; gain: GainNode }>();
 
   start() {
     if (this.ctx) { void this.ctx.resume(); return; }
@@ -21,12 +43,19 @@ class AudioDirector {
     if (!AC) return;
     const ctx = new AC();
     this.ctx = ctx;
+
     this.master = ctx.createGain();
     this.master.gain.value = 0.9;
     this.master.connect(ctx.destination);
+
     this.sfxBus = ctx.createGain();
     this.sfxBus.gain.value = 0.6;
     this.sfxBus.connect(this.master);
+
+    this.bgmBus = ctx.createGain();
+    this.bgmBus.gain.value = 0.45;
+    this.bgmBus.connect(this.master);
+
     // simple echo send for motif/voice-ish cues
     this.delay = ctx.createDelay(1);
     this.delay.delayTime.value = 0.32;
@@ -42,6 +71,7 @@ class AudioDirector {
     this.ambBus.gain.value = 0;
     this.ambFilter.connect(this.ambBus);
     this.ambBus.connect(this.master);
+
     const a = ctx.createOscillator(); a.type = 'sawtooth'; a.frequency.value = 55;
     const b = ctx.createOscillator(); b.type = 'sine'; b.frequency.value = 82.4;
     const ga = ctx.createGain(); ga.gain.value = 0.05;
@@ -49,6 +79,7 @@ class AudioDirector {
     a.connect(ga); b.connect(gb); ga.connect(this.ambFilter); gb.connect(this.ambFilter);
     a.start(); b.start();
     this.oscA = a; this.oscB = b;
+
     const noise = ctx.createBufferSource();
     noise.buffer = this.noiseBuffer(4, true);
     noise.loop = true;
@@ -56,11 +87,150 @@ class AudioDirector {
     const ng = ctx.createGain(); ng.gain.value = 0.25;
     noise.connect(nf); nf.connect(ng); ng.connect(this.ambFilter);
     noise.start();
+
     // slow wobble
     const lfo = ctx.createOscillator(); lfo.frequency.value = 0.07;
     const lg = ctx.createGain(); lg.gain.value = 60;
     lfo.connect(lg); lg.connect(this.ambFilter.frequency); lfo.start();
+
+    // Preload all manifest sample assets asynchronously
+    this.preloadAll();
   }
+
+  // --- Sample Asset Loading & Playback ---
+
+  private async loadSample(filename: string): Promise<AudioBuffer | null> {
+    if (!this.ctx) return null;
+    if (this.buffers.has(filename)) return this.buffers.get(filename)!;
+    try {
+      const resp = await fetch(`/assets/audio/${filename}`);
+      if (!resp.ok) return null;
+      const ab = await resp.arrayBuffer();
+      const buf = await this.ctx.decodeAudioData(ab);
+      this.buffers.set(filename, buf);
+      return buf;
+    } catch {
+      return null;
+    }
+  }
+
+  private preloadAll() {
+    const files = [
+      'sfx-footstep-metal.ogg',
+      'sfx-card-pickup.ogg',
+      'sfx-door-locked.ogg',
+      'sfx-locker-open.ogg',
+      'sfx-contested-tick.ogg',
+      'sfx-memory-reveal.ogg',
+      'sfx-ghost-appear.ogg',
+      'sfx-ghost-disappear.ogg',
+      'sfx-echo-overload.ogg',
+      'sfx-puzzle-solved.ogg',
+      'sfx-tender-skitter.ogg',
+      'sfx-pod-pump.ogg',
+      'sfx-pause-resume.ogg',
+      'sfx-terminal-boot.ogg',
+      'amb-storm-window-01.ogg',
+      'amb-vent-01.ogg',
+      'amb-relay-random-01.ogg',
+      'amb-sixteen-breaths-01.ogg',
+      'amb-hull-creak-01.ogg',
+      'cine-lethe-cascade-01.ogg',
+      'cine-door-dim-01.ogg',
+      'cine-ending-transition-01.ogg',
+      'bgm-title-01.ogg',
+      'bgm-station-01.ogg',
+      'bgm-echo-01.ogg',
+      'bgm-tension-01.ogg',
+      'bgm-well-01.ogg',
+      'bgm-reveal-01.ogg',
+      'bgm-decision-01.ogg',
+      'bgm-end-hername-01.ogg',
+      'bgm-end-lethe-01.ogg',
+      'bgm-end-cycle-01.ogg',
+      'bgm-end-yourname-01.ogg',
+      'bgm-credits-01.ogg',
+    ];
+    for (const f of files) {
+      void this.loadSample(f);
+    }
+  }
+
+  private playSample(filename: string, bus: GainNode = this.sfxBus, loop = false, vol = 1): AudioBufferSourceNode | null {
+    if (!this.ctx || this.muted) return null;
+    const buf = this.buffers.get(filename);
+    if (!buf) {
+      // Lazy load if not yet fetched
+      void this.loadSample(filename);
+      return null;
+    }
+    const src = this.ctx.createBufferSource();
+    src.buffer = buf;
+    src.loop = loop;
+    const g = this.ctx.createGain();
+    g.gain.value = vol;
+    src.connect(g);
+    g.connect(bus);
+    src.start();
+    return src;
+  }
+
+  // --- BGM Playback ---
+
+  playBGM(track: BgmTrack, loop = true, fade = 1.2) {
+    if (!this.ctx) return;
+    if (this.activeBgm && this.activeBgm.track === track) return;
+    this.stopBGM(fade);
+
+    const trackMap: Record<BgmTrack, string> = {
+      title: 'bgm-title-01.ogg',
+      station: 'bgm-station-01.ogg',
+      echo: 'bgm-echo-01.ogg',
+      tension: 'bgm-tension-01.ogg',
+      well: 'bgm-well-01.ogg',
+      reveal: 'bgm-reveal-01.ogg',
+      decision: 'bgm-decision-01.ogg',
+      hername: 'bgm-end-hername-01.ogg',
+      lethe: 'bgm-end-lethe-01.ogg',
+      cycle: 'bgm-end-cycle-01.ogg',
+      yourname: 'bgm-end-yourname-01.ogg',
+      credits: 'bgm-credits-01.ogg',
+    };
+
+    const file = trackMap[track];
+    const buf = this.buffers.get(file);
+    if (!buf) {
+      void this.loadSample(file);
+      return;
+    }
+
+    const src = this.ctx.createBufferSource();
+    src.buffer = buf;
+    src.loop = loop;
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0.0001, this.now());
+    g.gain.exponentialRampToValueAtTime(0.45, this.now() + Math.max(0.1, fade));
+    src.connect(g);
+    g.connect(this.bgmBus);
+    src.start();
+    this.activeBgm = { source: src, gain: g, track };
+  }
+
+  stopBGM(fade = 0.8) {
+    if (!this.ctx || !this.activeBgm) return;
+    const { source, gain } = this.activeBgm;
+    try {
+      gain.gain.cancelScheduledValues(this.now());
+      gain.gain.setValueAtTime(gain.gain.value, this.now());
+      gain.gain.exponentialRampToValueAtTime(0.0001, this.now() + fade);
+      source.stop(this.now() + fade + 0.05);
+    } catch {
+      // ignore already stopped source
+    }
+    this.activeBgm = undefined;
+  }
+
+  // --- Core Utility & Procedural Generators ---
 
   private noiseBuffer(seconds: number, brown = false) {
     const ctx = this.ctx!;
@@ -131,6 +301,108 @@ class AudioDirector {
     src.start(t0); src.stop(t0 + dur + 0.05);
   }
 
+  // --- Sound Effects & Cinematic Cues (Sample with Procedural Fallback) ---
+
+  footstep() {
+    if (!this.playSample('sfx-footstep-metal.ogg', this.sfxBus, false, 0.35)) {
+      this.noise(0.04, 800, 2, 0.08, 'lowpass');
+    }
+  }
+
+  cardPickup() {
+    if (!this.playSample('sfx-card-pickup.ogg', this.sfxBus, false, 0.5)) {
+      this.confirm();
+    }
+  }
+
+  doorLocked() {
+    if (!this.playSample('sfx-door-locked.ogg', this.sfxBus, false, 0.6)) {
+      this.deny();
+    }
+  }
+
+  lockerOpen() {
+    if (!this.playSample('sfx-locker-open.ogg', this.sfxBus, false, 0.6)) {
+      this.door();
+    }
+  }
+
+  contestedTick() {
+    if (!this.playSample('sfx-contested-tick.ogg', this.sfxBus, false, 0.4)) {
+      this.type();
+    }
+  }
+
+  memoryReveal() {
+    if (!this.playSample('sfx-memory-reveal.ogg', this.sfxBus, false, 0.5)) {
+      this.blip();
+    }
+  }
+
+  ghostAppear() {
+    if (!this.playSample('sfx-ghost-appear.ogg', this.sfxBus, false, 0.5)) {
+      this.static();
+    }
+  }
+
+  ghostDisappear() {
+    if (!this.playSample('sfx-ghost-disappear.ogg', this.sfxBus, false, 0.5)) {
+      this.static();
+    }
+  }
+
+  echoOverload() {
+    if (!this.playSample('sfx-echo-overload.ogg', this.sfxBus, false, 0.5)) {
+      this.echoDenied();
+    }
+  }
+
+  puzzleSolved() {
+    if (!this.playSample('sfx-puzzle-solved.ogg', this.sfxBus, false, 0.6)) {
+      this.confirm();
+    }
+  }
+
+  tenderSkitter() {
+    if (!this.playSample('sfx-tender-skitter.ogg', this.sfxBus, false, 0.4)) {
+      this.relay();
+    }
+  }
+
+  pauseResume() {
+    if (!this.playSample('sfx-pause-resume.ogg', this.sfxBus, false, 0.5)) {
+      this.blip();
+    }
+  }
+
+  terminalBoot() {
+    if (!this.playSample('sfx-terminal-boot.ogg', this.sfxBus, false, 0.5)) {
+      this.relay();
+    }
+  }
+
+  hullCreak() {
+    this.playSample('amb-hull-creak-01.ogg', this.ambBus, false, 0.35);
+  }
+
+  relayRandom() {
+    if (!this.playSample('amb-relay-random-01.ogg', this.ambBus, false, 0.3)) {
+      this.relay();
+    }
+  }
+
+  doorDim() {
+    this.playSample('cine-door-dim-01.ogg', this.sfxBus, false, 0.5);
+  }
+
+  letheCascade() {
+    this.playSample('cine-lethe-cascade-01.ogg', this.sfxBus, false, 0.6);
+  }
+
+  endingTransition() {
+    this.playSample('cine-ending-transition-01.ogg', this.sfxBus, false, 0.6);
+  }
+
   echoOn() { this.tone(180, 0.5, 'sine', 0.18, 0, true, 720); this.noise(0.25, 3000, 0.8, 0.08); }
   echoOff() { this.tone(600, 0.25, 'sine', 0.1, 0, false, 160); }
   echoDenied() { this.tone(140, 0.15, 'square', 0.05); }
@@ -158,6 +430,11 @@ class AudioDirector {
       open: [220, 293.66, 329.63, 392],
     };
     sets[mode].forEach((f, i) => this.tone(f, 1.4, 'triangle', 0.11, i * 0.55, true));
+
+    // Also trigger corresponding ending music track
+    if (mode === 'major') this.playBGM('hername', false, 2.0);
+    else if (mode === 'minor') this.playBGM('lethe', false, 2.0);
+    else if (mode === 'open') this.playBGM('yourname', false, 2.0);
   }
 
   breath() { this.noise(1.6, 700, 0.6, 0.12, 'bandpass'); }

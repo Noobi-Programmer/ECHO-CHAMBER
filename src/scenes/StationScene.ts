@@ -277,7 +277,7 @@ export class StationScene extends Phaser.Scene {
         const ver = resolved ? 0 : Math.floor(et / 800) % 2; // 0 = M, 1 = V
         if (ver !== lastVer) {
           lastVer = ver;
-          if (!resolved) { audio.blip(); ui.subtitle(ver === 0 ? T.argM : T.argV, ver === 0 ? SRC.MIRA + '  [CONTESTED]' : SRC.VOSS + '  [CONTESTED]', 760); }
+          if (!resolved) { audio.contestedTick(); ui.subtitle(ver === 0 ? T.argM : T.argV, ver === 0 ? SRC.MIRA + '  [CONTESTED]' : SRC.VOSS + '  [CONTESTED]', 760); }
         }
         if (resolved && et > 300 && et < 400) ui.subtitle(T.argM, SRC.MIRA, 1800);
         // Mira at the key slot, Voss beside her (both face the console)
@@ -424,7 +424,7 @@ export class StationScene extends Phaser.Scene {
       if (this.echoHeld > ECHO_MAX_MS) {
         this.echoActive = false;
         this.echoCool = ECHO_COOL_MS;
-        audio.echoOff();
+        audio.echoOverload();
         this.glitch = 0.6;
         if (!this.limitWarned) { this.limitWarned = true; ui.orpheus(T.orphEchoLimit); }
       }
@@ -508,7 +508,10 @@ export class StationScene extends Phaser.Scene {
       if (!this.blocked(this.player.x, ny)) this.player.y = ny;
       if (Math.abs(vx) > 0) { this.dir = 'side'; this.flip = vx < 0; }
       if (vy !== 0 && vx === 0) this.dir = vy < 0 ? 'up' : 'down';
+      const oldFrame = Math.floor(this.walkClock / 170) % 2;
       this.walkClock += dt;
+      const newFrame = Math.floor(this.walkClock / 170) % 2;
+      if (newFrame !== oldFrame && newFrame === 1) audio.footstep();
       this.idleClock = 0;
     } else {
       this.walkClock = 0;
@@ -714,7 +717,7 @@ export class StationScene extends Phaser.Scene {
         if (!this.has('lockerOpen')) {
           await ui.say(T.locker1);
           await ui.say(T.locker2);
-          audio.door();
+          audio.lockerOpen();
           this.props.locker.setTexture('locker_open');
           this.set('lockerOpen');
           this.lockerAt = this.time.now;
@@ -740,7 +743,7 @@ export class StationScene extends Phaser.Scene {
         this.props.card.setVisible(false);
         this.set('cardTaken');
         ui.toast('LAB CARD · M. SEN', 2200);
-        audio.confirm();
+        audio.cardPickup();
         for (const l of T.orphCardFound) await ui.orpheus(l, 900);
         this.recall(14);
         break;
@@ -754,6 +757,7 @@ export class StationScene extends Phaser.Scene {
           this.openDoor('door_lab');
           this.set('labOpen');
         } else {
+          audio.doorLocked();
           await ui.say(T.labDoor);
           const tries = (this.doorTries = (this.doorTries ?? 0) + 1);
           this.set('doorTried');
@@ -848,9 +852,10 @@ export class StationScene extends Phaser.Scene {
     this.set('enteredLab');
     this.setStep('lab');
     this.recall(22);
+    audio.playBGM('station');
     const t = this.props.tender as unknown as Phaser.GameObjects.Sprite;
     t.setVisible(true).setPosition(150, 214);
-    audio.static();
+    audio.tenderSkitter();
     let fr = 0;
     const ev = this.time.addEvent({ delay: 140, loop: true, callback: () => { fr ^= 1; t.setTexture(`tender_${fr}`); } });
     this.tweens.add({ targets: t, x: 132, duration: 900, yoyo: true, repeat: 1 });
@@ -911,11 +916,11 @@ export class StationScene extends Phaser.Scene {
     const seq = await ui.keypad();
     if (!seq) return;
     if (seq.join(',') !== 'circle,triangle,diamond') {
-      audio.deny();
+      audio.doorLocked();
       await ui.say(this.has('seenCode') ? 'The keypad buzzes softly and clears.' : 'The keypad buzzes softly and clears. You don\'t know the sequence — but Mira did.');
       return;
     }
-    audio.confirm();
+    audio.puzzleSolved();
     await this.coreDoorBeat();
   }
 
@@ -925,11 +930,13 @@ export class StationScene extends Phaser.Scene {
     this.recall(70);
     // lights dim, the question, the involuntary echo of R-016 at this door
     this.dim = 1;
+    audio.doorDim();
     audio.ambience(true, 0.4, 2);
     await wait(900);
     await ui.orpheus(T.nameQ, 1400);
     const g = this.ghost('ghost_up_0', 700);
     g.setPosition(356, 226);
+    audio.ghostAppear();
     this.echoForced = true;
     ui.source(SRC.UNREG);
     await wait(900);
@@ -940,7 +947,7 @@ export class StationScene extends Phaser.Scene {
     const writing = ui.frost("DON'T ANSWER", 10);
     await wait(3100);
     // she dissolves mid-word
-    audio.static();
+    audio.ghostDisappear();
     this.glitch = 1;
     this.tweens.add({ targets: g, alpha: 0, scaleX: 1.6, scaleY: 0.4, duration: 700 });
     await writing;
@@ -954,6 +961,7 @@ export class StationScene extends Phaser.Scene {
     this.set('coreOpen');
     this.dim = 0.35;
     audio.ambience(true, 0.7, 2);
+    audio.playBGM('well');
     audio.startNameLoop(() => { if (this.step !== 'ending') void ui.orpheus(T.nameQ, 1500); }, 25000);
   }
 
@@ -1059,6 +1067,7 @@ export class StationScene extends Phaser.Scene {
     await ui.orpheus(T.orphLetheAvail, 1600);
     await ui.orpheus(T.orphSpeak, 1600);
     this.setStep('final');
+    audio.playBGM('decision');
     ui.hint('Answer at the Well console — or don\'t.');
     audio.startNameLoop(() => { if (this.step === 'final') void ui.orpheus(T.nameQ, 1500); }, 25000);
   }
@@ -1172,6 +1181,7 @@ export class StationScene extends Phaser.Scene {
     audio.stopNameLoop();
     ui.orpheusClear();
     audio.lever();
+    audio.letheCascade();
     this.props.lethe.setTexture('lethe_pulled');
     audio.ambience(false, 1, 0.1);
     await wait(3000); // silence
